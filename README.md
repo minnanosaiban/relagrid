@@ -25,7 +25,7 @@ GitHub Pagesで公開する場合は、リポジトリの Settings → Pages →
 - **テキストDSL**: 独自の簡潔な記法とGUIが双方向に同期（下記「DSL構文」参照）
 - ノード・接続線・色付きゾーン・注釈ノート、38種類のアイコン、9色パレット
 - ライト/ダークテーマ、Undo/Redo
-- SVG / PNG / JSON / テキストへの書き出し、JSON・テキストの読み込み
+- SVG / PNG / PNG(16:9) / JSON / テキストへの書き出し、JSON・テキストの読み込み
 - ブラウザのlocalStorageへの自動保存
 
 ## DSL構文
@@ -33,6 +33,8 @@ GitHub Pagesで公開する場合は、リポジトリの Settings → Pages →
 ```
 grid 4x3                 # 列x行のグリッドサイズ
 theme dark                # light | dark (省略時 light)
+title "図のタイトル"        # 上部に表示（任意）
+source "参考: ○○ 判例コラム" # 右下に小さく表示（任意）
 
 zone A1:B2 "Public zone" color=blue
 node api B1 icon=server size=1.2 color=blue "API"

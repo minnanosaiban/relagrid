@@ -50,6 +50,8 @@
     return {
       grid: { cols: 4, rows: 3 },
       theme: 'light',
+      title: '',
+      source: '',
       zones: [],
       nodes: [],
       edges: [],

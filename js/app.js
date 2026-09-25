@@ -27,6 +27,7 @@
     var newBtn = document.getElementById('newBtn');
     var exportSvgBtn = document.getElementById('exportSvgBtn');
     var exportPngBtn = document.getElementById('exportPngBtn');
+    var exportPng169Btn = document.getElementById('exportPng169Btn');
     var exportJsonBtn = document.getElementById('exportJsonBtn');
     var exportDslBtn = document.getElementById('exportDslBtn');
     var importBtn = document.getElementById('importBtn');
@@ -848,10 +849,17 @@
       downloadBlob('diagram.svg', new Blob([svgStr], { type: 'image/svg+xml' }));
     });
 
-    exportPngBtn.addEventListener('click', function () {
+    // aspect (e.g. 16/9) pads the canvas with background so the diagram is
+    // centered in a frame of that ratio; null keeps the diagram's own size.
+    function exportPng(aspect, filename) {
       var svg = canvas.querySelector('svg');
       var width = parseFloat(svg.getAttribute('width'));
       var height = parseFloat(svg.getAttribute('height'));
+      var frameW = width, frameH = height;
+      if (aspect) {
+        if (width / height < aspect) frameW = Math.round(height * aspect);
+        else frameH = Math.round(width / aspect);
+      }
       var scale = 2;
       var svgStr = getCleanSvgString();
       var img = new Image();
@@ -859,17 +867,19 @@
       var url = URL.createObjectURL(svgBlob);
       img.onload = function () {
         var c = document.createElement('canvas');
-        c.width = width * scale; c.height = height * scale;
+        c.width = frameW * scale; c.height = frameH * scale;
         var ctx = c.getContext('2d');
         ctx.fillStyle = RG.getThemeBase(state.model.theme).bg;
         ctx.fillRect(0, 0, c.width, c.height);
-        ctx.drawImage(img, 0, 0, c.width, c.height);
+        ctx.drawImage(img, (frameW - width) / 2 * scale, (frameH - height) / 2 * scale, width * scale, height * scale);
         URL.revokeObjectURL(url);
-        c.toBlob(function (blob) { downloadBlob('diagram.png', blob); });
+        c.toBlob(function (blob) { downloadBlob(filename, blob); });
       };
       img.onerror = function () { URL.revokeObjectURL(url); flash('PNG書き出しに失敗しました'); };
       img.src = url;
-    });
+    }
+    exportPngBtn.addEventListener('click', function () { exportPng(null, 'diagram.png'); });
+    exportPng169Btn.addEventListener('click', function () { exportPng(16 / 9, 'diagram-16x9.png'); });
 
     exportJsonBtn.addEventListener('click', function () {
       downloadBlob('diagram.json', new Blob([JSON.stringify(state.model, null, 2)], { type: 'application/json' }));

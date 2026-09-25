@@ -12,6 +12,8 @@
     var lines = [];
     lines.push('grid ' + model.grid.cols + 'x' + model.grid.rows);
     if (model.theme && model.theme !== 'light') lines.push('theme ' + model.theme);
+    if (model.title) lines.push('title "' + esc(model.title) + '"');
+    if (model.source) lines.push('source "' + esc(model.source) + '"');
 
     if (model.zones && model.zones.length) {
       lines.push('');

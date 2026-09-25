@@ -59,6 +59,7 @@
       <span class="group-label">書き出し</span>
       <button type="button" id="exportSvgBtn">SVG</button>
       <button type="button" id="exportPngBtn">PNG</button>
+      <button type="button" id="exportPng169Btn" title="16:9の余白付きで書き出し（SNS・スライド向け）">PNG 16:9</button>
       <button type="button" id="exportJsonBtn">JSON</button>
       <button type="button" id="exportDslBtn">テキスト</button>
     </div>
@@ -96,6 +97,8 @@
     <h2>RelaGrid DSL 構文</h2>
     <pre>grid 4x3                 # 列x行のグリッドサイズ
 theme dark                # light | dark (省略時 light)
+title "図のタイトル"        # 上部に表示（任意）
+source "参考: ○○ 判例コラム" # 右下に小さく表示（任意）
 
 zone A1:B2 "Public zone" color=blue
 node api B1 icon=server size=1.2 color=blue "API"

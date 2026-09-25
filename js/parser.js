@@ -4,6 +4,8 @@
  * Grammar (one statement per line):
  *   grid <cols>x<rows>
  *   theme light|dark
+ *   title "図のタイトル"        (canvas header)
+ *   source "出典・参考"        (canvas footer, small)
  *   zone <A1:B2> ["label"] [color=<name>]
  *   node <id> <A1> [icon=<name>] [size=<n>] [color=<name>] ["label"]
  *   note <targetId> ["text"] [pos=top|bottom|left|right]
@@ -136,6 +138,8 @@
       try {
         if (head === 'grid') parseGrid(tokens, model);
         else if (head === 'theme') model.theme = tokens[1] ? tokens[1].value : 'light';
+        else if (head === 'title') model.title = tokens.slice(1).map(function (t) { return t.value; }).join(' ');
+        else if (head === 'source') model.source = tokens.slice(1).map(function (t) { return t.value; }).join(' ');
         else if (head === 'zone') parseZone(tokens, model);
         else if (head === 'node') parseNode(tokens, model);
         else if (head === 'note') parseNote(tokens, model);

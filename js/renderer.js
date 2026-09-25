@@ -23,22 +23,25 @@
 
   function computeLayout(model) {
     var cols = Math.max(1, model.grid.cols), rows = Math.max(1, model.grid.rows);
+    var titleH = model.title ? 44 : 0;
+    var sourceH = model.source ? 22 : 0;
+    var top = LAYOUT.marginY + titleH;
     var width = LAYOUT.marginX * 2 + cols * LAYOUT.cellW;
-    var height = LAYOUT.marginY * 2 + rows * LAYOUT.cellH;
+    var height = top + rows * LAYOUT.cellH + LAYOUT.marginY + sourceH;
     return {
-      cols: cols, rows: rows, width: width, height: height,
+      cols: cols, rows: rows, width: width, height: height, top: top,
       cellCenter: function (col, row) {
         return {
           x: LAYOUT.marginX + (col - 0.5) * LAYOUT.cellW,
-          y: LAYOUT.marginY + (row - 0.5) * LAYOUT.cellH
+          y: top + (row - 0.5) * LAYOUT.cellH
         };
       },
       cellTopLeft: function (col, row) {
-        return { x: LAYOUT.marginX + (col - 1) * LAYOUT.cellW, y: LAYOUT.marginY + (row - 1) * LAYOUT.cellH };
+        return { x: LAYOUT.marginX + (col - 1) * LAYOUT.cellW, y: top + (row - 1) * LAYOUT.cellH };
       },
       pointToCell: function (x, y) {
         var col = Math.floor((x - LAYOUT.marginX) / LAYOUT.cellW) + 1;
-        var row = Math.floor((y - LAYOUT.marginY) / LAYOUT.cellH) + 1;
+        var row = Math.floor((y - top) / LAYOUT.cellH) + 1;
         col = Math.min(Math.max(col, 1), cols);
         row = Math.min(Math.max(row, 1), rows);
         return { col: col, row: row };
@@ -84,7 +87,7 @@
       viewBox: '0 0 ' + layout.width + ' ' + layout.height,
       width: layout.width, height: layout.height,
       class: 'rg-canvas rg-theme-' + theme,
-      'font-family': "'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', sans-serif"
+      'font-family': "'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic UI', 'Meiryo', sans-serif"
     });
 
     var defs = el('defs');
@@ -95,6 +98,17 @@
 
     var bg = el('rect', { x: 0, y: 0, width: layout.width, height: layout.height, fill: base.bg, class: 'rg-bg' });
     svg.appendChild(bg);
+
+    if (model.title) {
+      var titleEl = el('text', { x: layout.width / 2, y: 40, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 800, fill: base.text, class: 'rg-title' });
+      titleEl.textContent = model.title;
+      svg.appendChild(titleEl);
+    }
+    if (model.source) {
+      var sourceEl = el('text', { x: layout.width - 20, y: layout.height - 10, 'text-anchor': 'end', 'font-size': 11, fill: base.subtleText, class: 'rg-source' });
+      sourceEl.textContent = model.source;
+      svg.appendChild(sourceEl);
+    }
 
     // Invisible per-cell hit targets (bottom-most interactive layer).
     var cellsLayer = el('g', { class: 'rg-cells' });
@@ -111,12 +125,13 @@
 
     // Grid guide lines (toggleable).
     var gridLayer = el('g', { class: 'rg-grid', style: options.showGrid ? '' : 'display:none' });
+    var gridBottom = layout.top + layout.rows * LAYOUT.cellH;
     for (var gc = 0; gc <= layout.cols; gc++) {
       var x = LAYOUT.marginX + gc * LAYOUT.cellW;
-      gridLayer.appendChild(el('line', { x1: x, y1: LAYOUT.marginY, x2: x, y2: layout.height - LAYOUT.marginY, stroke: base.grid, 'stroke-width': 1 }));
+      gridLayer.appendChild(el('line', { x1: x, y1: layout.top, x2: x, y2: gridBottom, stroke: base.grid, 'stroke-width': 1 }));
     }
     for (var gr = 0; gr <= layout.rows; gr++) {
-      var y = LAYOUT.marginY + gr * LAYOUT.cellH;
+      var y = layout.top + gr * LAYOUT.cellH;
       gridLayer.appendChild(el('line', { x1: LAYOUT.marginX, y1: y, x2: layout.width - LAYOUT.marginX, y2: y, stroke: base.grid, 'stroke-width': 1 }));
     }
     svg.appendChild(gridLayer);
@@ -286,8 +301,10 @@
       pn.boxRect.setAttribute('y', boxY);
       pn.boxRect.setAttribute('width', boxW);
       pn.boxRect.setAttribute('height', boxH);
+      // Start below the label for bottom notes so the leader never crosses it.
+      var leaderStartY = pn.offY > 0 && pn.hasLabel ? pn.radius + 24 : pn.radius;
       pn.leaderLine.setAttribute('x1', pn.center.x + pn.offX * pn.radius);
-      pn.leaderLine.setAttribute('y1', pn.center.y + pn.offY * pn.radius);
+      pn.leaderLine.setAttribute('y1', pn.center.y + pn.offY * leaderStartY);
       pn.leaderLine.setAttribute('x2', boxX + boxW / 2);
       pn.leaderLine.setAttribute('y2', boxY + boxH / 2);
       pn.textEls.forEach(function (t, i) {
