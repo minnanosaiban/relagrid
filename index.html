@@ -68,7 +68,7 @@
       <input type="file" id="importFile" accept=".json,.txt" style="display:none">
     </div>
     <div class="tool-group">
-      <button type="button" id="helpBtn">? 構文ヘルプ</button>
+      <button type="button" id="helpBtn">? AIを利用する方法</button>
     </div>
   </div>
 </header>
@@ -101,17 +101,17 @@
   <div class="help-panel-inner">
     <button type="button" id="helpCloseBtn" class="help-close">×</button>
 
-    <h2>Claudeと組み合わせて作る</h2>
+    <h2>AIと組み合わせて作る</h2>
     <ol class="claude-steps">
-      <li>下の欄のプロンプトをコピーし、「【内容】」の下に作りたい関係図の説明を書き足してからClaudeに送る</li>
-      <li>Claudeが返したDSLコード（<code>```</code>で囲まれた部分）をコピーする</li>
+      <li>下の欄のプロンプトをコピーし、「【内容】」の下に作りたい関係図の説明を書き足してからAIに送る</li>
+      <li>AIが返したDSLコード（<code>```</code>で囲まれた部分）をコピーする</li>
       <li>画面左端の「▶ テキスト (DSL)」をクリックして欄を開き、そこに貼り付ける（図がその場で描画されます）</li>
     </ol>
     <div class="claude-prompt-wrap">
       <textarea id="claudePromptText" class="claude-prompt" rows="8" readonly></textarea>
       <button type="button" id="claudePromptCopyBtn">プロンプトをコピー</button>
     </div>
-    <p class="hint">プロンプトにはDSLの構文をすべて含めているので、Claudeがこのサイトを見られなくても正しい記法で書けます。</p>
+    <p class="hint">プロンプトにはDSLの構文をすべて含めているので、AIがこのサイトを見られなくても正しい記法で書けます。</p>
 
     <hr>
 
