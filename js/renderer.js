@@ -260,7 +260,7 @@
         return t;
       });
       notesLayer.appendChild(g);
-      pendingNotes.push({ textEls: textEls, boxRect: boxRect, leaderLine: leaderLine, center: center, radius: radius, offX: offX, offY: offY });
+      pendingNotes.push({ textEls: textEls, boxRect: boxRect, leaderLine: leaderLine, center: center, radius: radius, offX: offX, offY: offY, hasLabel: !!target.label });
     });
     svg.appendChild(notesLayer);
 
@@ -277,7 +277,9 @@
       });
       var boxW = Math.max(60, maxWidth + padX * 2);
       var boxH = pn.textEls.length * lineHeight + padY * 2 - 4;
-      var anchor = { x: pn.center.x + pn.offX * (pn.radius + 14), y: pn.center.y + pn.offY * (pn.radius + 14) };
+      // Node labels sit just below the circle, so a bottom note must clear them.
+      var gapY = pn.offY > 0 && pn.hasLabel ? 30 : 14;
+      var anchor = { x: pn.center.x + pn.offX * (pn.radius + 14), y: pn.center.y + pn.offY * (pn.radius + gapY) };
       var boxX = anchor.x + (pn.offX > 0 ? 0 : pn.offX < 0 ? -boxW : -boxW / 2);
       var boxY = anchor.y + (pn.offY > 0 ? 0 : pn.offY < 0 ? -boxH : -boxH / 2);
       pn.boxRect.setAttribute('x', boxX);
