@@ -793,9 +793,22 @@
       if (!confirm('現在の図を破棄して新規作成しますか？')) return;
       commit(M.createDefaultModel(), { selection: null });
     });
-    RG.samples.forEach(function (s, i) {
-      sampleSelect.appendChild(h('option', { value: String(i), text: s.name }));
-    });
+    (function populateSamples() {
+      var groups = {};
+      var order = [];
+      RG.samples.forEach(function (s, i) {
+        var cat = s.category || 'その他';
+        if (!groups[cat]) { groups[cat] = []; order.push(cat); }
+        groups[cat].push(i);
+      });
+      order.forEach(function (cat) {
+        var optgroup = h('optgroup', { label: cat });
+        groups[cat].forEach(function (i) {
+          optgroup.appendChild(h('option', { value: String(i), text: RG.samples[i].name }));
+        });
+        sampleSelect.appendChild(optgroup);
+      });
+    })();
     sampleSelect.value = '';
     sampleSelect.addEventListener('change', function () {
       if (sampleSelect.value === '') return;

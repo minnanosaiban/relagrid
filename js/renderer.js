@@ -7,7 +7,7 @@
   var SVGNS = 'http://www.w3.org/2000/svg';
 
   var LAYOUT = {
-    cellW: 168, cellH: 132, marginX: 72, marginY: 60, baseR: 26
+    cellW: 168, cellH: 132, marginX: 80, marginY: 68, baseR: 26
   };
   RG.LAYOUT = LAYOUT;
 
@@ -231,8 +231,11 @@
     });
     svg.appendChild(nodesLayer);
 
-    // Notes.
+    // Notes. Box size depends on the actual text, so geometry (leader line,
+    // box, line positions) is only finalized in the measurement pass below
+    // once the text nodes are attached to the document and can be measured.
     var notesLayer = el('g', { class: 'rg-notes' });
+    var pendingNotes = [];
     model.notes.forEach(function (note) {
       var target = nodeById[note.target];
       if (!target) return;
@@ -243,32 +246,55 @@
       var offX = dir === 'left' ? -1 : dir === 'right' ? 1 : 0;
       var offY = dir === 'top' ? -1 : dir === 'bottom' ? 1 : 0;
       if (offX === 0 && offY === 0) offX = 1;
-      var boxW = 128, boxH = 44;
-      var anchor = { x: center.x + offX * (radius + 14), y: center.y + offY * (radius + 14) };
-      var boxX = anchor.x + (offX >= 0 ? 0 : -boxW) + (offX === 0 ? -boxW / 2 : 0);
-      var boxY = anchor.y + (offY >= 0 ? 0 : -boxH) + (offY === 0 ? -boxH / 2 : 0);
 
       var g = el('g', { class: 'rg-note' + (selection && selection.type === 'note' && selection.id === note.id ? ' selected' : ''), 'data-kind': 'note', 'data-id': note.id });
-      var lineEnd = { x: boxX + boxW / 2, y: boxY + boxH / 2 };
-      g.appendChild(el('line', {
-        x1: center.x + offX * radius, y1: center.y + offY * radius, x2: lineEnd.x, y2: lineEnd.y,
-        stroke: col.stroke, 'stroke-width': 1.2, 'stroke-dasharray': '3 3'
-      }));
-      g.appendChild(el('rect', { x: boxX, y: boxY, width: boxW, height: boxH, rx: 8, fill: base.labelBg, stroke: col.stroke, 'stroke-width': 1.2 }));
+      var leaderLine = el('line', { stroke: col.stroke, 'stroke-width': 1.2, 'stroke-dasharray': '3 3' });
+      g.appendChild(leaderLine);
+      var boxRect = el('rect', { rx: 8, fill: base.labelBg, stroke: col.stroke, 'stroke-width': 1.2 });
+      g.appendChild(boxRect);
       var lines = String(note.text || '').split('\\n');
-      lines.forEach(function (lineStr, i) {
-        var t = el('text', { x: boxX + boxW / 2, y: boxY + 17 + i * 15, 'text-anchor': 'middle', 'font-size': 11, fill: base.text });
+      var textEls = lines.map(function (lineStr) {
+        var t = el('text', { 'text-anchor': 'middle', 'font-size': 11, fill: base.text });
         t.textContent = lineStr;
         g.appendChild(t);
+        return t;
       });
       notesLayer.appendChild(g);
+      pendingNotes.push({ textEls: textEls, boxRect: boxRect, leaderLine: leaderLine, center: center, radius: radius, offX: offX, offY: offY });
     });
     svg.appendChild(notesLayer);
 
     container.innerHTML = '';
     container.appendChild(svg);
 
-    // Second pass: size label backgrounds now that text is laid out in the DOM.
+    // Second pass: notes are sized to fit their measured text, then the
+    // label backgrounds are sized now that text is laid out in the DOM.
+    var lineHeight = 15, padX = 10, padY = 8;
+    pendingNotes.forEach(function (pn) {
+      var maxWidth = 0;
+      pn.textEls.forEach(function (t) {
+        try { var bb = t.getBBox(); if (bb.width > maxWidth) maxWidth = bb.width; } catch (err) { /* ignore */ }
+      });
+      var boxW = Math.max(60, maxWidth + padX * 2);
+      var boxH = pn.textEls.length * lineHeight + padY * 2 - 4;
+      var anchor = { x: pn.center.x + pn.offX * (pn.radius + 14), y: pn.center.y + pn.offY * (pn.radius + 14) };
+      var boxX = anchor.x + (pn.offX > 0 ? 0 : pn.offX < 0 ? -boxW : -boxW / 2);
+      var boxY = anchor.y + (pn.offY > 0 ? 0 : pn.offY < 0 ? -boxH : -boxH / 2);
+      pn.boxRect.setAttribute('x', boxX);
+      pn.boxRect.setAttribute('y', boxY);
+      pn.boxRect.setAttribute('width', boxW);
+      pn.boxRect.setAttribute('height', boxH);
+      pn.leaderLine.setAttribute('x1', pn.center.x + pn.offX * pn.radius);
+      pn.leaderLine.setAttribute('y1', pn.center.y + pn.offY * pn.radius);
+      pn.leaderLine.setAttribute('x2', boxX + boxW / 2);
+      pn.leaderLine.setAttribute('y2', boxY + boxH / 2);
+      pn.textEls.forEach(function (t, i) {
+        t.setAttribute('x', boxX + boxW / 2);
+        t.setAttribute('y', boxY + padY + 9 + i * lineHeight);
+      });
+    });
+
+    // Third pass: size label backgrounds now that text is laid out in the DOM.
     pendingLabels.forEach(function (p) {
       try {
         var bbox = p.text.getBBox();
