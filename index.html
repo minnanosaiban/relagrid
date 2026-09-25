@@ -94,6 +94,21 @@
 <div id="helpPanel" class="help-panel" style="display:none">
   <div class="help-panel-inner">
     <button type="button" id="helpCloseBtn" class="help-close">×</button>
+
+    <h2>Claudeと組み合わせて作る</h2>
+    <ol class="claude-steps">
+      <li>下の欄のプロンプトをコピーし、「【内容】」の下に作りたい関係図の説明を書き足してからClaudeに送る</li>
+      <li>Claudeが返したDSLコード（<code>```</code>で囲まれた部分）をコピーする</li>
+      <li>このページ左側の「テキスト (DSL)」欄に貼り付ける（図がその場で描画されます）</li>
+    </ol>
+    <div class="claude-prompt-wrap">
+      <textarea id="claudePromptText" class="claude-prompt" rows="8" readonly></textarea>
+      <button type="button" id="claudePromptCopyBtn">プロンプトをコピー</button>
+    </div>
+    <p class="hint">プロンプトにはDSLの構文をすべて含めているので、Claudeがこのサイトを見られなくても正しい記法で書けます。</p>
+
+    <hr>
+
     <h2>RelaGrid DSL 構文</h2>
     <pre>grid 4x3                 # 列x行のグリッドサイズ
 theme dark                # light | dark (省略時 light)
@@ -127,6 +142,62 @@ note api "SLA 99.95%\np99&lt;200ms" pos=bottom
   document.getElementById('helpCloseBtn').addEventListener('click', function () {
     document.getElementById('helpPanel').style.display = 'none';
   });
+
+  (function () {
+    var promptText = [
+      'RelaGridという、テキストで関係図を書けるツールの記法（DSL）で、下記の内容を関係図にしてください。',
+      '出力は```で囲んだDSLコードだけにしてください。説明文は不要です。',
+      '',
+      '【内容】',
+      '（ここに関係図にしたい内容を書いてください）',
+      '',
+      '【RelaGridのDSL構文】',
+      'grid <列数>x<行数>          例: grid 6x4',
+      'theme light|dark            省略時 light',
+      'title "図のタイトル"         任意。上部に表示',
+      'source "出典・参考"          任意。右下に小さく表示',
+      '',
+      'zone <A1:B2> ["ラベル"] [color=<色>]   矩形範囲で複数マスをまとめて色付け',
+      'node <id> <マス> [icon=<アイコン名>] [size=<倍率>] [color=<色>] ["ラベル"]',
+      '  例: node api B1 icon=server size=1.2 color=blue "API"',
+      '',
+      '<id> <矢印> <id> ["ラベル"] [style=solid|dashed] [width=<太さ>] [color=<色>]',
+      '  矢印は -> (単方向) / <- (逆方向) / <-> (双方向) / -- (矢印なし)',
+      '  例: api -> db "SQL" style=dashed color=red width=2',
+      '',
+      'note <対象id> ["本文"] [pos=top|bottom|left|right]',
+      '  本文の改行は \\n と書く',
+      '',
+      '# 行頭の # はコメント',
+      '',
+      'マスは列をアルファベット(A,B,C…)・行を数字(1,2,3…)で指定します（例: B2 = 2列目2行目）。',
+      '色は ' + (window.RelaGrid ? RelaGrid.colorNames.join(', ') : 'slate, blue, green, red, orange, purple, teal, pink, yellow') + ' から選べます。',
+      'アイコンは ' + (window.RelaGrid ? RelaGrid.iconOrder.join(', ') : 'user, server, database, cloud, box') + ' から選べます。'
+    ].join('\n');
+
+    var promptEl = document.getElementById('claudePromptText');
+    promptEl.value = promptText;
+
+    document.getElementById('claudePromptCopyBtn').addEventListener('click', function () {
+      var btn = this;
+      function done() {
+        var original = btn.textContent;
+        btn.textContent = 'コピーしました';
+        setTimeout(function () { btn.textContent = original; }, 1500);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(promptEl.value).then(done, function () {
+          promptEl.select();
+          document.execCommand('copy');
+          done();
+        });
+      } else {
+        promptEl.select();
+        document.execCommand('copy');
+        done();
+      }
+    });
+  })();
 </script>
 </body>
 </html>
