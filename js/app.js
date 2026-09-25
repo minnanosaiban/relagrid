@@ -6,8 +6,13 @@
   var RG = global.RelaGrid;
   var M = RG.model;
   var STORAGE_KEY = 'relagrid.dsl.v1';
+  var TEXT_PANEL_KEY = 'relagrid.textPanelOpen.v1';
 
   document.addEventListener('DOMContentLoaded', function () {
+    var appMain = document.getElementById('appMain');
+    var textPanel = document.getElementById('textPanel');
+    var collapseTextBtn = document.getElementById('collapseTextBtn');
+    var expandTextBtn = document.getElementById('expandTextBtn');
     var dslText = document.getElementById('dslText');
     var canvas = document.getElementById('canvas');
     var inspector = document.getElementById('inspector');
@@ -785,6 +790,15 @@
     zoomOutBtn.addEventListener('click', function () { state.zoom = Math.max(0.3, state.zoom - 0.15); applyZoom(); });
     zoomResetBtn.addEventListener('click', function () { state.zoom = 1; applyZoom(); });
 
+    // ---------- toolbar: collapsible text (DSL) panel — defaults to closed ----------
+    function setTextPanelOpen(open) {
+      textPanel.classList.toggle('collapsed', !open);
+      appMain.classList.toggle('text-collapsed', !open);
+      try { localStorage.setItem(TEXT_PANEL_KEY, open ? '1' : '0'); } catch (e) { /* ignore */ }
+    }
+    collapseTextBtn.addEventListener('click', function () { setTextPanelOpen(false); });
+    expandTextBtn.addEventListener('click', function () { setTextPanelOpen(true); });
+
     // ---------- toolbar: undo/redo ----------
     undoBtn.addEventListener('click', undo);
     redoBtn.addEventListener('click', redo);
@@ -953,6 +967,10 @@
     var initialResult = RG.parseDSL(initialText);
     state.model = initialResult.errors.length ? M.createDefaultModel() : initialResult.model;
     dslText.value = initialText;
+
+    var textPanelOpen = false;
+    try { textPanelOpen = localStorage.getItem(TEXT_PANEL_KEY) === '1'; } catch (e) { /* ignore */ }
+    setTextPanelOpen(textPanelOpen);
 
     applyTheme();
     setTool('select');

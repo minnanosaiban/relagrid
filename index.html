@@ -73,10 +73,16 @@
   </div>
 </header>
 
-<main class="app-main">
-  <section class="panel panel-text">
-    <div class="panel-title">テキスト (DSL)</div>
+<main class="app-main" id="appMain">
+  <section class="panel panel-text" id="textPanel">
+    <div class="panel-title">
+      <span>テキスト (DSL)</span>
+      <button type="button" id="collapseTextBtn" class="panel-collapse-btn" title="閉じる">◀</button>
+    </div>
     <textarea id="dslText" spellcheck="false"></textarea>
+    <button type="button" id="expandTextBtn" class="panel-expand-strip" title="テキスト (DSL) を開く">
+      <span>▶</span><span class="panel-expand-label">テキスト (DSL)</span>
+    </button>
   </section>
 
   <section class="panel panel-canvas">
@@ -99,7 +105,7 @@
     <ol class="claude-steps">
       <li>下の欄のプロンプトをコピーし、「【内容】」の下に作りたい関係図の説明を書き足してからClaudeに送る</li>
       <li>Claudeが返したDSLコード（<code>```</code>で囲まれた部分）をコピーする</li>
-      <li>このページ左側の「テキスト (DSL)」欄に貼り付ける（図がその場で描画されます）</li>
+      <li>画面左端の「▶ テキスト (DSL)」をクリックして欄を開き、そこに貼り付ける（図がその場で描画されます）</li>
     </ol>
     <div class="claude-prompt-wrap">
       <textarea id="claudePromptText" class="claude-prompt" rows="8" readonly></textarea>
