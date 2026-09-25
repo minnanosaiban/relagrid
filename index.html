@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RelaGrid ― グリッド関係図エディタ</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="app-header">
+  <div class="brand">
+    <span class="brand-mark">▦</span>
+    <span class="brand-name">RelaGrid</span>
+    <span class="brand-sub">グリッド関係図エディタ</span>
+  </div>
+
+  <div class="toolbar">
+    <div class="tool-group" role="group" aria-label="編集ツール">
+      <button type="button" data-tool="select" class="tool-btn active" title="選択・移動">↖ 選択</button>
+      <button type="button" data-tool="add-node" class="tool-btn" title="ノード追加">◎ ノード</button>
+      <button type="button" data-tool="connect" class="tool-btn" title="接続を作成">→ 接続</button>
+      <button type="button" data-tool="zone" class="tool-btn" title="ゾーンを作成">▭ ゾーン</button>
+      <button type="button" data-tool="note" class="tool-btn" title="ノートを追加">✎ ノート</button>
+    </div>
+
+    <div class="tool-group">
+      <label class="grid-size-label">グリッド
+        <input type="number" id="gridCols" min="1" max="26" value="4" title="列数">
+        ×
+        <input type="number" id="gridRows" min="1" max="30" value="3" title="行数">
+      </label>
+      <button type="button" id="applyGrid">適用</button>
+    </div>
+
+    <div class="tool-group">
+      <button type="button" id="undoBtn" title="元に戻す (Ctrl+Z)">↶</button>
+      <button type="button" id="redoBtn" title="やり直す (Ctrl+Shift+Z)">↷</button>
+    </div>
+
+    <div class="tool-group">
+      <button type="button" id="zoomOut" title="縮小">－</button>
+      <span id="zoomLabel" class="zoom-label">100%</span>
+      <button type="button" id="zoomIn" title="拡大">＋</button>
+      <button type="button" id="zoomReset" title="表示リセット">⤢</button>
+    </div>
+
+    <div class="tool-group">
+      <label class="checkbox-label"><input type="checkbox" id="showGridToggle" checked> グリッド線</label>
+      <button type="button" id="themeToggle">☾ ダーク</button>
+    </div>
+  </div>
+
+  <div class="toolbar toolbar-secondary">
+    <div class="tool-group">
+      <button type="button" id="newBtn">新規</button>
+      <select id="sampleSelect"><option value="">サンプルを読込…</option></select>
+    </div>
+    <div class="tool-group">
+      <span class="group-label">書き出し</span>
+      <button type="button" id="exportSvgBtn">SVG</button>
+      <button type="button" id="exportPngBtn">PNG</button>
+      <button type="button" id="exportJsonBtn">JSON</button>
+      <button type="button" id="exportDslBtn">テキスト</button>
+    </div>
+    <div class="tool-group">
+      <button type="button" id="importBtn">インポート…</button>
+      <input type="file" id="importFile" accept=".json,.txt" style="display:none">
+    </div>
+    <div class="tool-group">
+      <button type="button" id="helpBtn">? 構文ヘルプ</button>
+    </div>
+  </div>
+</header>
+
+<main class="app-main">
+  <section class="panel panel-text">
+    <div class="panel-title">テキスト (DSL)</div>
+    <textarea id="dslText" spellcheck="false"></textarea>
+  </section>
+
+  <section class="panel panel-canvas">
+    <div id="canvas" class="canvas-viewport tool-select"></div>
+  </section>
+
+  <aside class="panel panel-inspector">
+    <div class="panel-title">インスペクタ</div>
+    <div id="inspector"></div>
+  </aside>
+</main>
+
+<div id="statusBar" class="status-bar"></div>
+
+<div id="helpPanel" class="help-panel" style="display:none">
+  <div class="help-panel-inner">
+    <button type="button" id="helpCloseBtn" class="help-close">×</button>
+    <h2>RelaGrid DSL 構文</h2>
+    <pre>grid 4x3                 # 列x行のグリッドサイズ
+theme dark                # light | dark (省略時 light)
+
+zone A1:B2 "Public zone" color=blue
+node api B1 icon=server size=1.2 color=blue "API"
+
+api -&gt; db "SQL"            # -&gt;  単方向
+api &lt;-&gt; cache "sync"       # &lt;-&gt; 双方向 / &lt;- 逆方向 / -- 矢印なし
+api -&gt; db "SQL" style=dashed color=red width=2
+
+note api "SLA 99.95%\np99&lt;200ms" pos=bottom
+
+# 行頭の # はコメント</pre>
+    <p>アイコン名の例: user, users, laptop, mobile, browser, server, database, cloud, globe, wifi, plug, queue, gear, cpu, disk, lock, unlock, shield, mail, bell, clock, bolt, refresh, chart, folder, file, card, pin, search, filter, link, git, code, terminal, check, x, warning, plus, box</p>
+    <p class="hint">GUIで編集すると、テキストは自動的にこの記法へ整形されます。</p>
+  </div>
+</div>
+
+<script src="js/icons.js"></script>
+<script src="js/colors.js"></script>
+<script src="js/model.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/serializer.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/samples.js"></script>
+<script src="js/app.js"></script>
+<script>
+  document.getElementById('helpCloseBtn').addEventListener('click', function () {
+    document.getElementById('helpPanel').style.display = 'none';
+  });
+</script>
+</body>
+</html>
