@@ -4,25 +4,65 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RelaGrid ― グリッド関係図エディタ</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
-<header class="app-header">
-  <div class="brand">
-    <span class="brand-mark">▦</span>
-    <span class="brand-name">RelaGrid</span>
-    <span class="brand-sub">グリッド関係図エディタ</span>
-  </div>
-
-  <div class="toolbar">
-    <div class="tool-group" role="group" aria-label="編集ツール">
-      <button type="button" data-tool="select" class="tool-btn active" title="選択・移動">↖ 選択</button>
-      <button type="button" data-tool="add-node" class="tool-btn" title="ノード追加">◎ ノード</button>
-      <button type="button" data-tool="connect" class="tool-btn" title="接続を作成">→ 接続</button>
-      <button type="button" data-tool="zone" class="tool-btn" title="ゾーンを作成">▭ ゾーン</button>
-      <button type="button" data-tool="note" class="tool-btn" title="ノートを追加">✎ ノート</button>
+<!-- ヒーロー（sidenote / pdf-tools と同じ構成）。sidenoteの「デザイン」ボタンの位置に、編集ツールのボタンを置く。
+     ボタンは data-tool 属性で js/app.js が拾う（選択中は .active が付く）。 -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <h1 class="hero-title">RelaGrid</h1>
+      <p class="hero-desc">グリッドに置いて、矢印でつなぐ。</p>
+      <button type="button" id="helpBtn" class="btn-outline hero-cta">? AIを利用する方法</button>
+      <div class="hero-shortcuts">
+        <div class="hero-shortcuts-title">ブラウザだけで完結</div>
+        <ul>
+          <li>GUIとテキスト（DSL）が双方向に同期</li>
+          <li>SVG / PNG / JSON / テキストで書き出し</li>
+        </ul>
+      </div>
+      <div class="hero-theme-section">
+        <div class="hero-theme-head"><span class="hero-theme-title">編集ツール</span></div>
+        <div class="theme-grid" role="group" aria-label="編集ツール">
+          <button type="button" data-tool="select" class="theme-swatch active" title="選択・移動">↖ 選択</button>
+          <button type="button" data-tool="add-node" class="theme-swatch" title="ノード追加">◎ ノード</button>
+          <button type="button" data-tool="connect" class="theme-swatch" title="接続を作成">→ 接続</button>
+          <button type="button" data-tool="zone" class="theme-swatch" title="ゾーンを作成">▭ ゾーン</button>
+          <button type="button" data-tool="note" class="theme-swatch" title="ノートを追加">✎ ノート</button>
+        </div>
+      </div>
     </div>
 
+    <div class="hero-right">
+      <div class="browser-mock" aria-hidden="true">
+        <div class="browser-mock-bar"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span><span class="browser-mock-url">relagrid</span></div>
+        <div class="browser-mock-body">
+          <div class="mock-paper">
+            <svg viewBox="0 0 360 200" width="100%" role="img" aria-label="">
+              <rect x="14" y="14" width="150" height="172" rx="10" fill="#dbeafe" opacity=".7"/>
+              <g stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#a)">
+                <line x1="86" y1="64" x2="186" y2="64"/><line x1="86" y1="136" x2="186" y2="136"/><line x1="230" y1="84" x2="230" y2="116" stroke-dasharray="5 4"/>
+              </g>
+              <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#94a3b8"/></marker></defs>
+              <circle cx="64" cy="64" r="22" fill="#fff" stroke="#2563eb" stroke-width="3"/>
+              <circle cx="64" cy="136" r="22" fill="#fff" stroke="#2563eb" stroke-width="3"/>
+              <circle cx="230" cy="64" r="22" fill="#fff" stroke="#16a34a" stroke-width="3"/>
+              <circle cx="230" cy="136" r="22" fill="#fff" stroke="#dc2626" stroke-width="3"/>
+              <circle cx="320" cy="100" r="22" fill="#fff" stroke="#7c3aed" stroke-width="3"/>
+              <line x1="252" y1="70" x2="296" y2="92" stroke="#94a3b8" stroke-width="2"/>
+              <rect x="262" y="140" width="80" height="28" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="editor-card" id="editor">
+<div class="app-header">
+<div class="toolbar">
     <div class="tool-group">
       <label class="grid-size-label">グリッド
         <input type="number" id="gridCols" min="1" max="26" value="4" title="列数">
@@ -67,11 +107,8 @@
       <button type="button" id="importBtn">インポート…</button>
       <input type="file" id="importFile" accept=".json,.txt" style="display:none">
     </div>
-    <div class="tool-group">
-      <button type="button" id="helpBtn">? AIを利用する方法</button>
-    </div>
   </div>
-</header>
+</div>
 
 <main class="app-main" id="appMain">
   <section class="panel panel-text" id="textPanel">
@@ -96,6 +133,7 @@
 </main>
 
 <div id="statusBar" class="status-bar"></div>
+</section>
 
 <div id="helpPanel" class="help-panel" style="display:none">
   <div class="help-panel-inner">

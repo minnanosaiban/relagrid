@@ -9,6 +9,12 @@
   --ui-danger: #dc2626;
   --ui-btn-bg: #ffffff;
   --ui-btn-hover: #eef2ff;
+  /* sidenote と共通のヒーロー配色 */
+  --hero-bg: #eef0f3;
+  --page-bg: #f4f5f7;
+  --swatch-bg: #f2f2f2;
+  --swatch-hover: #e8e8ea;
+  --card-shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px -1px rgba(0,0,0,.1);
 }
 
 body.rg-dark {
@@ -21,22 +27,69 @@ body.rg-dark {
   --ui-accent-text: #0b1220;
   --ui-btn-bg: #1e293b;
   --ui-btn-hover: #24324a;
+  --hero-bg: #0f1726;
+  --page-bg: #0b1220;
+  --swatch-bg: #1e293b;
+  --swatch-hover: #24324a;
+  --card-shadow: 0 1px 3px rgba(0,0,0,.5);
 }
 
 * { box-sizing: border-box; }
 
 html, body {
-  height: 100%;
   margin: 0;
-  overflow: hidden;
   font-family: 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
-  background: var(--ui-bg);
+  background: var(--page-bg);
   color: var(--ui-text);
 }
 
 body {
-  display: flex;
-  flex-direction: column;
+  padding: 28px 40px 60px;
+  overflow-x: hidden;   /* .heroの100vwフルブリード対策 */
+}
+
+/* ---------- hero（sidenote / pdf-tools と同じ構成） ---------- */
+.hero {
+  width: 100vw; position: relative; left: 50%; margin: -28px 0 0 -50vw;
+  padding: 64px 40px 44px; background: var(--hero-bg); border-bottom: 1px solid var(--ui-border);
+}
+.hero-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+.hero-title { font-size: 38px; font-weight: 700; line-height: 1.28; letter-spacing: -.5px; margin: 0 0 18px; }
+.hero-desc { font-size: 22px; line-height: 1.7; color: var(--ui-subtext); margin: 0 0 24px; max-width: 18em; }
+.btn-outline {
+  font-size: 14px; height: 40px; padding: 0 16px; border-radius: 8px; font-weight: 500; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
+}
+.hero-shortcuts { margin-top: 20px; }
+.hero-shortcuts-title { font-size: 12px; font-weight: 600; color: var(--ui-subtext); margin-bottom: 6px; }
+.hero-shortcuts ul { list-style: none; margin: 0; padding: 0; font-size: 12.5px; line-height: 1.9; color: var(--ui-subtext); }
+.hero-shortcuts li::before { content: "・"; }
+.hero-theme-section { margin-top: 28px; }
+.hero-theme-head { margin-bottom: 12px; }
+.hero-theme-title { font-size: 16px; font-weight: 700; }
+.theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 460px; }
+.theme-swatch {
+  height: 40px; padding: 0 8px; border: 1px solid var(--ui-border); background: var(--swatch-bg); border-radius: 8px;
+  font-size: 13px; font-weight: 500; color: var(--ui-text); cursor: pointer; text-align: center;
+  box-shadow: var(--card-shadow); transition: box-shadow .15s, background .15s;
+}
+.theme-swatch:hover { background: var(--swatch-hover); }
+.theme-swatch.active { background: var(--ui-text); color: var(--ui-bg); border-color: var(--ui-text); font-weight: 700; }
+.browser-mock { border: 1px solid var(--ui-border); border-radius: 14px; overflow: hidden; background: var(--ui-panel); box-shadow: 0 25px 50px -12px rgba(0,0,0,.25); }
+.browser-mock-bar { height: 38px; display: flex; align-items: center; gap: 7px; padding: 0 14px; background: var(--swatch-bg); border-bottom: 1px solid var(--ui-border); }
+.browser-mock-bar .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.dot-red { background: #ff5f57; } .dot-yellow { background: #ffbd2e; } .dot-green { background: #28c840; }
+.browser-mock-url { margin-left: 10px; font-size: 11.5px; color: var(--ui-subtext); background: var(--ui-panel); border: 1px solid var(--ui-border); border-radius: 999px; padding: 3px 12px; flex: 1 1 auto; }
+.browser-mock-body { background: var(--swatch-bg); padding: 22px; }
+.mock-paper { background: var(--ui-panel); border: 1px solid var(--ui-border); border-radius: 10px; box-shadow: var(--card-shadow); padding: 16px; }
+
+/* ---------- 編集画面（カード） ---------- */
+.editor-card {
+  display: flex; flex-direction: column;
+  height: max(640px, calc(100vh - 56px));
+  max-width: 1500px; margin: 32px auto 0;
+  background: var(--ui-panel); border: 1px solid var(--ui-border); border-radius: 14px;
+  box-shadow: var(--card-shadow); overflow: hidden;
 }
 
 button, input, select, textarea {
@@ -320,7 +373,17 @@ input[type="text"], input[type="number"], select, textarea {
 .rg-note.selected rect { stroke-width: 2.4; }
 
 /* ---------- responsive fallback ---------- */
+@media (max-width: 860px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 32px; }
+  .hero-title { font-size: 30px; }
+}
+@media (max-width: 600px) {
+  body { padding-left: 16px; padding-right: 16px; }
+  .hero { padding-left: 20px; padding-right: 20px; }
+  .theme-grid { grid-template-columns: repeat(2, 1fr); max-width: none; }
+}
 @media (max-width: 980px) {
+  .editor-card { height: auto; }
   .app-main { grid-template-columns: 1fr; grid-auto-rows: 240px 1fr 240px; }
   .panel { border-right: none; border-bottom: 1px solid var(--ui-border); }
 }
