@@ -21,15 +21,49 @@
     return e;
   }
 
+  // 文字倍率（DSLの textscale）。未設定・不正値は1。
+  function textScaleOf(model) {
+    var s = Number(model && model.textScale);
+    return s > 0 ? s : 1;
+  }
+
+  // DOMなしで幅を見積もる（全角=font-size、半角=0.56倍）。タイトル・出典の折り返し用。
+  function estimateWidth(str, size) {
+    var w = 0;
+    for (var i = 0; i < str.length; i++) w += str.charCodeAt(i) > 255 ? size : size * 0.56;
+    return w;
+  }
+  function wrapText(text, size, maxWidth) {
+    var lines = [], cur = '';
+    String(text || '').split('\\n').forEach(function (para) {   // DSLでは改行を \n（バックスラッシュ+n）と書く（noteと同じ）
+      cur = '';
+      for (var i = 0; i < para.length; i++) {
+        var next = cur + para.charAt(i);
+        if (cur && estimateWidth(next, size) > maxWidth) { lines.push(cur); cur = para.charAt(i); }
+        else cur = next;
+      }
+      lines.push(cur);
+    });
+    return lines;
+  }
+
   function computeLayout(model) {
     var cols = Math.max(1, model.grid.cols), rows = Math.max(1, model.grid.rows);
-    var titleH = model.title ? 44 : 0;
-    var sourceH = model.source ? 22 : 0;
-    var top = LAYOUT.marginY + titleH;
+    var ts = textScaleOf(model);
     var width = LAYOUT.marginX * 2 + cols * LAYOUT.cellW;
+    var titleFont = 20 * ts, titleLineH = titleFont * 1.35;
+    var sourceFont = 11 * ts, sourceLineH = sourceFont * 1.45;
+    // 図が細長い（縦版など）ときにタイトル・出典がはみ出さないよう、幅に合わせて折り返す。
+    var titleLines = model.title ? wrapText(model.title, titleFont * 1.05, width - 60) : [];
+    var sourceLines = model.source ? wrapText(model.source, sourceFont, width - 40) : [];
+    var titleH = titleLines.length ? Math.round(titleLines.length * titleLineH + 17) : 0;
+    var sourceH = sourceLines.length ? Math.round(sourceLines.length * sourceLineH + 6) : 0;
+    var top = LAYOUT.marginY + titleH;
     var height = top + rows * LAYOUT.cellH + LAYOUT.marginY + sourceH;
     return {
       cols: cols, rows: rows, width: width, height: height, top: top,
+      ts: ts, titleFont: titleFont, titleLineH: titleLineH, titleLines: titleLines,
+      sourceFont: sourceFont, sourceLineH: sourceLineH, sourceLines: sourceLines,
       cellCenter: function (col, row) {
         return {
           x: LAYOUT.marginX + (col - 0.5) * LAYOUT.cellW,
@@ -99,16 +133,18 @@
     var bg = el('rect', { x: 0, y: 0, width: layout.width, height: layout.height, fill: base.bg, class: 'rg-bg' });
     svg.appendChild(bg);
 
-    if (model.title) {
-      var titleEl = el('text', { x: layout.width / 2, y: 40, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 800, fill: base.text, class: 'rg-title' });
-      titleEl.textContent = model.title;
+    var ts = layout.ts;
+    layout.titleLines.forEach(function (line, i) {
+      var titleEl = el('text', { x: layout.width / 2, y: 20 + layout.titleFont + i * layout.titleLineH, 'text-anchor': 'middle', 'font-size': layout.titleFont, 'font-weight': 800, fill: base.text, class: 'rg-title' });
+      titleEl.textContent = line;
       svg.appendChild(titleEl);
-    }
-    if (model.source) {
-      var sourceEl = el('text', { x: layout.width - 20, y: layout.height - 10, 'text-anchor': 'end', 'font-size': 11, fill: base.subtleText, class: 'rg-source' });
-      sourceEl.textContent = model.source;
+    });
+    layout.sourceLines.forEach(function (line, i) {
+      var fromBottom = layout.sourceLines.length - 1 - i;
+      var sourceEl = el('text', { x: layout.width - 20, y: layout.height - 10 - fromBottom * layout.sourceLineH, 'text-anchor': 'end', 'font-size': layout.sourceFont, fill: base.subtleText, class: 'rg-source' });
+      sourceEl.textContent = line;
       svg.appendChild(sourceEl);
-    }
+    });
 
     // Invisible per-cell hit targets (bottom-most interactive layer).
     var cellsLayer = el('g', { class: 'rg-cells' });
@@ -158,7 +194,7 @@
         rx: 18, fill: col.zoneFill, stroke: col.zoneStroke, 'stroke-width': 1.5
       }));
       if (z.label) {
-        var t = el('text', { x: tl.x + pad + 14, y: tl.y + pad + 24, 'font-size': 13, 'font-weight': 700, fill: col.stroke, class: 'rg-zone-label' });
+        var t = el('text', { x: tl.x + pad + 14, y: tl.y + pad + 12 + 12 * ts, 'font-size': 13 * ts, 'font-weight': 700, fill: col.stroke, class: 'rg-zone-label' });
         t.textContent = z.label;
         g.appendChild(t);
       }
@@ -201,7 +237,7 @@
 
       if (e.label) {
         var mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
-        var text = el('text', { x: mx, y: my, 'text-anchor': 'middle', 'dominant-baseline': 'middle', 'font-size': 12, 'font-weight': 600, fill: col.stroke });
+        var text = el('text', { x: mx, y: my, 'text-anchor': 'middle', 'dominant-baseline': 'middle', 'font-size': 12 * ts, 'font-weight': 600, fill: col.stroke });
         text.textContent = e.label;
         addLabelBg(g, text, pendingLabels);
         g.appendChild(text);
@@ -235,7 +271,7 @@
       g.appendChild(iconG);
 
       if (n.label) {
-        var labelText = el('text', { x: 0, y: radius + 18, 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 700, fill: base.text });
+        var labelText = el('text', { x: 0, y: radius + 6 + 12 * ts, 'text-anchor': 'middle', 'font-size': 12.5 * ts, 'font-weight': 700, fill: base.text });
         labelText.textContent = n.label;
         var bgRect = el('rect', { class: 'label-bg', rx: 3, ry: 3 });
         g.appendChild(bgRect);
@@ -269,7 +305,7 @@
       g.appendChild(boxRect);
       var lines = String(note.text || '').split('\\n');
       var textEls = lines.map(function (lineStr) {
-        var t = el('text', { 'text-anchor': 'middle', 'font-size': 11, fill: base.text });
+        var t = el('text', { 'text-anchor': 'middle', 'font-size': 11 * ts, fill: base.text });
         t.textContent = lineStr;
         g.appendChild(t);
         return t;
@@ -284,7 +320,7 @@
 
     // Second pass: notes are sized to fit their measured text, then the
     // label backgrounds are sized now that text is laid out in the DOM.
-    var lineHeight = 15, padX = 10, padY = 8;
+    var lineHeight = 15 * ts, padX = 10, padY = 8;
     pendingNotes.forEach(function (pn) {
       var maxWidth = 0;
       pn.textEls.forEach(function (t) {
@@ -293,7 +329,7 @@
       var boxW = Math.max(60, maxWidth + padX * 2);
       var boxH = pn.textEls.length * lineHeight + padY * 2 - 4;
       // Node labels sit just below the circle, so a bottom note must clear them.
-      var gapY = pn.offY > 0 && pn.hasLabel ? 30 : 14;
+      var gapY = pn.offY > 0 && pn.hasLabel ? 12 + 18 * ts : 14;
       var anchor = { x: pn.center.x + pn.offX * (pn.radius + 14), y: pn.center.y + pn.offY * (pn.radius + gapY) };
       var boxX = anchor.x + (pn.offX > 0 ? 0 : pn.offX < 0 ? -boxW : -boxW / 2);
       var boxY = anchor.y + (pn.offY > 0 ? 0 : pn.offY < 0 ? -boxH : -boxH / 2);
@@ -302,14 +338,14 @@
       pn.boxRect.setAttribute('width', boxW);
       pn.boxRect.setAttribute('height', boxH);
       // Start below the label for bottom notes so the leader never crosses it.
-      var leaderStartY = pn.offY > 0 && pn.hasLabel ? pn.radius + 24 : pn.radius;
+      var leaderStartY = pn.offY > 0 && pn.hasLabel ? pn.radius + 6 + 18 * ts : pn.radius;
       pn.leaderLine.setAttribute('x1', pn.center.x + pn.offX * pn.radius);
       pn.leaderLine.setAttribute('y1', pn.center.y + pn.offY * leaderStartY);
       pn.leaderLine.setAttribute('x2', boxX + boxW / 2);
       pn.leaderLine.setAttribute('y2', boxY + boxH / 2);
       pn.textEls.forEach(function (t, i) {
         t.setAttribute('x', boxX + boxW / 2);
-        t.setAttribute('y', boxY + padY + 9 + i * lineHeight);
+        t.setAttribute('y', boxY + padY + 8 + 1 * ts + i * lineHeight);
       });
     });
 

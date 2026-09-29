@@ -52,6 +52,7 @@
       theme: 'light',
       title: '',
       source: '',
+      textScale: 1,
       zones: [],
       nodes: [],
       edges: [],

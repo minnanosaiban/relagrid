@@ -107,6 +107,48 @@
         'note a "職場訪問・自宅押しかけ\\n（2010.8〜2011.1）" pos=right',
         'note court "2014年 PがA・T社・K社・I社を提訴\\n親会社I社の信義則上の義務違反を否定\\n（通報時Pは既に退職）" pos=bottom'
       ].join('\n')
+    },
+    {
+      // 上の横長版と同じ内容を、X（旧Twitter）などに縦画像で投稿しやすい形にしたもの。
+      // 3列に絞って縦に並べ替え、textscaleで文字を大きくして、投稿時に小さくなりすぎないようにしている。
+      // 書き出しは「PNG 縦」（縦長のまま書き出す）を使う。
+      name: 'グループ会社内セクハラ・ストーカー事件（最高裁H30.2.15）縦版・X投稿用',
+      category: '法律・判例',
+      source: 'https://www.thomsonreuters.co.jp/ja/westlaw-japan/column-law/2018/180507/',
+      text: [
+        '# 縦長・3列。textscaleで文字を大きくしている（画像を縮小して投稿しても読みやすくするため）',
+        'grid 3x5',
+        'textscale 1.3',
+        'title "グループ会社内セクハラ・ストーカー事件と\\n親会社の責任（最高裁 平成30年2月15日判決）"',
+        'source "参考: 浜辺陽一郎「ハラスメントの内部通報に警鐘を鳴らす最高裁判決」\\nWestlaw Japan 判例コラム 第132号（2018年5月7日）"',
+        '',
+        'zone A2:B2 "I社（親会社）" color=purple',
+        'zone A3:B5 "T社（子会社）" color=blue',
+        'zone C3:C5 "K社（子会社）" color=teal',
+        '',
+        'node court A1 icon=file  size=1   color=slate  "最高裁 H30.2.15"',
+        'node win   A2 icon=bell  size=1   color=purple "グループ相談窓口"',
+        'node i     B2 icon=box   size=1   color=purple "I社"',
+        'node d     A3 icon=user  size=1   color=slate  "D（同僚）"',
+        'node t     B3 icon=box   size=1   color=blue   "T社（P雇用主）"',
+        'node k     C3 icon=box   size=1   color=teal   "K社（A雇用主）"',
+        'node g     A4 icon=user  size=1   color=slate  "G（係長）"',
+        'node f     B4 icon=user  size=1   color=slate  "F（課長）"',
+        'node p     A5 icon=user  size=1.1 color=orange "P（被害者）"',
+        'node a     C5 icon=user  size=1.1 color=red    "A（加害者）"',
+        '',
+        'i -> t "親子会社"',
+        'i -> k "親子会社"',
+        'a -> p "交際→破局後つきまとい" style=dashed color=red width=2',
+        'p -> g "相談"',
+        'p -> f "相談"',
+        'd -> win "通報（2011.10）" style=dashed color=purple',
+        'court -> i "責任否定" color=red',
+        '',
+        'note court "2014年 PがA・T社・K社・I社を提訴\\n親会社I社の信義則上の義務違反を否定\\n（通報時Pは既に退職）" pos=right',
+        'note f "G・Fとも事実確認・対応せず" pos=right',
+        'note a "職場訪問・自宅押しかけ\\n（2010.8〜2011.1）" pos=bottom'
+      ].join('\n')
     }
   ];
 

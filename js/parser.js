@@ -6,6 +6,7 @@
  *   theme light|dark
  *   title "図のタイトル"        (canvas header)
  *   source "出典・参考"        (canvas footer, small)
+ *   textscale 1.3            (title/label/note text size multiplier, 0.6-2.5, default 1)
  *   zone <A1:B2> ["label"] [color=<name>]
  *   node <id> <A1> [icon=<name>] [size=<n>] [color=<name>] ["label"]
  *   note <targetId> ["text"] [pos=top|bottom|left|right]
@@ -139,6 +140,7 @@
         if (head === 'grid') parseGrid(tokens, model);
         else if (head === 'theme') model.theme = tokens[1] ? tokens[1].value : 'light';
         else if (head === 'title') model.title = tokens.slice(1).map(function (t) { return t.value; }).join(' ');
+        else if (head === 'textscale') model.textScale = Math.min(2.5, Math.max(0.6, parseFloat(tokens[1] && tokens[1].value) || 1));
         else if (head === 'source') model.source = tokens.slice(1).map(function (t) { return t.value; }).join(' ');
         else if (head === 'zone') parseZone(tokens, model);
         else if (head === 'node') parseNode(tokens, model);

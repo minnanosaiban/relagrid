@@ -33,6 +33,7 @@
     var exportSvgBtn = document.getElementById('exportSvgBtn');
     var exportPngBtn = document.getElementById('exportPngBtn');
     var exportPng169Btn = document.getElementById('exportPng169Btn');
+    var exportPngPortraitBtn = document.getElementById('exportPngPortraitBtn');
     var exportJsonBtn = document.getElementById('exportJsonBtn');
     var exportDslBtn = document.getElementById('exportDslBtn');
     var importBtn = document.getElementById('importBtn');
@@ -865,12 +866,16 @@
 
     // aspect (e.g. 16/9) pads the canvas with background so the diagram is
     // centered in a frame of that ratio; null keeps the diagram's own size.
-    function exportPng(aspect, filename) {
+    // portrait=true: 縦画像用。図が縦長ならそのまま（横に余白を足して文字を小さくしない）、
+    // 4:5より横長のときだけ上下に余白を足して4:5にそろえる。
+    function exportPng(aspect, filename, portrait) {
       var svg = canvas.querySelector('svg');
       var width = parseFloat(svg.getAttribute('width'));
       var height = parseFloat(svg.getAttribute('height'));
       var frameW = width, frameH = height;
-      if (aspect) {
+      if (portrait) {
+        if (width / height > 4 / 5) frameH = Math.round(width * 5 / 4);
+      } else if (aspect) {
         if (width / height < aspect) frameW = Math.round(height * aspect);
         else frameH = Math.round(width / aspect);
       }
@@ -894,6 +899,7 @@
     }
     exportPngBtn.addEventListener('click', function () { exportPng(null, 'diagram.png'); });
     exportPng169Btn.addEventListener('click', function () { exportPng(16 / 9, 'diagram-16x9.png'); });
+    exportPngPortraitBtn.addEventListener('click', function () { exportPng(null, 'diagram-portrait.png', true); });
 
     exportJsonBtn.addEventListener('click', function () {
       downloadBlob('diagram.json', new Blob([JSON.stringify(state.model, null, 2)], { type: 'application/json' }));

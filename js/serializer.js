@@ -14,6 +14,7 @@
     if (model.theme && model.theme !== 'light') lines.push('theme ' + model.theme);
     if (model.title) lines.push('title "' + esc(model.title) + '"');
     if (model.source) lines.push('source "' + esc(model.source) + '"');
+    if (model.textScale && model.textScale !== 1) lines.push('textscale ' + model.textScale);
 
     if (model.zones && model.zones.length) {
       lines.push('');
