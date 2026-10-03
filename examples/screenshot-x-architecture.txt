@@ -1,0 +1,23 @@
+# docs/tech/screenshot-x.md「全体の構成」の図（tomo/docs/tech/img/screenshot-x-architecture-*.svg）の元データ。
+# RelaGrid のテキスト欄に貼り付けて「SVG」で書き出す（light / dark の2枚）。
+grid 5x3
+title "全体像：撮影も保管も、すべてこのパソコンの中"
+source "screenshot-x 技術解説"
+
+zone B1:E3 "利用者のパソコンの中" color=green
+
+node x A2 icon=globe color=slate "X（公開アカウント）"
+node app B1 icon=laptop color=orange "画面（取得・仕分け・書き出し）"
+node browser B2 icon=browser size=1.1 color=blue "Chrome / Edge（Playwright）"
+node cap C2 icon=cpu color=blue "ウィンドウを撮影"
+node arc D2 icon=folder size=1.1 color=green "アーカイブ（PNG＋台帳）"
+node out E2 icon=file color=green "PDF・JSON・提出用"
+node prof B3 icon=lock color=slate "専用プロファイル"
+
+x -> browser "投稿を開く"
+browser -> cap "ウィンドウ"
+cap -> arc "保存"
+arc -> out "書き出し"
+app -> browser "取得を指示" style=dashed
+browser -> prof "ログインを保存" style=dashed
+note cap "PrintWindowで描かせるので\n他の窓が写り込まない" pos=bottom

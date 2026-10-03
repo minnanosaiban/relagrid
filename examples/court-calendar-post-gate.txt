@@ -1,0 +1,20 @@
+# docs/tech/court-calendar.md「行ってきたよ掲示板」の図（tomo/docs/img/court-calendar-post-gate.svg）の元データ。
+grid 3x4
+title "掲示板への投稿：通る道は3つだけ"
+source "court-calendar 技術解説"
+
+zone B1:B4 "判定（authorizePost）" color=blue
+
+node post A2 icon=mail color=slate "投稿"
+node admin B1 icon=unlock color=blue "運営の編集パスワード"
+node ts B2 icon=shield color=purple "Turnstile を通過"
+node dev B4 icon=terminal color=slate "ローカル開発のみ"
+node ok C2 icon=check size=1.2 color=green "掲示板に載る"
+
+post -> admin "①"
+post -> ts "②"
+post -> dev "③" style=dashed
+admin -> ok
+ts -> ok
+dev -> ok style=dashed
+note ts "action と hostname も照合\nSECRET 未設定なら一般の投稿は通らない" pos=bottom

@@ -1,0 +1,28 @@
+# docs/tech/court-calendar.md「全体の構成」の図（tomo/docs/img/court-calendar-architecture.svg）の元データ。
+# RelaGrid のテキスト欄に貼り付けて「SVG」で書き出す。
+grid 4x3
+title "応援傍聴ナビの全体像：Cloudflare の中で完結する"
+source "court-calendar 技術解説"
+
+zone A1:A3 "ブラウザ" color=slate
+zone B1:B3 "Cloudflare Pages" color=blue
+zone C1:C3 "保存先" color=green
+
+node visitor A1 icon=users color=slate "傍聴する人"
+node pres A3 icon=user color=orange "問題提起人・運営"
+node static B1 icon=browser color=blue "静的ページ"
+node fn B2 icon=bolt color=blue "Functions（API）"
+node og B3 icon=card color=teal "Xカード生成"
+node d1 C1 icon=database color=green "D1（SQLite）"
+node r2 C3 icon=disk color=green "R2（ファイル）"
+node ts D2 icon=shield color=purple "Turnstile"
+
+visitor -> static "閲覧"
+static -> fn "fetch"
+pres -> fn "編集"
+fn -> d1 "SQL"
+fn -> r2 "資料・写真"
+fn -> og "OGP画像" style=dashed
+fn -> ts "投稿の検証" style=dashed
+note pres "X-Edit-Key / X-Presenter-Token\nで本人確認" pos=bottom
+note ts "掲示板のスパム対策" pos=bottom

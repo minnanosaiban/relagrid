@@ -1,0 +1,22 @@
+# docs/tech/court-calendar.md「権限は3つの立場に分ける」の図（tomo/docs/img/court-calendar-roles.svg）の元データ。
+grid 3x2
+title "権限の3層：誰が何を書けるか"
+source "court-calendar 技術解説"
+
+zone A1:A2 "誰でも" color=slate
+zone B1:B2 "問題提起人" color=orange
+zone C1:C2 "運営" color=red
+
+node v A1 icon=users color=slate "傍聴する人"
+node vk A2 icon=lock color=slate "閲覧キー"
+node p B1 icon=user color=orange "本人のログイン"
+node pc B2 icon=folder color=orange "自分の事件だけ"
+node a C1 icon=gear color=red "編集パスワード"
+node ac C2 icon=shield color=red "全事件・削除・発行"
+
+v -> vk "非公開事件" style=dashed
+p -> pc "X-Presenter-Token"
+a -> ac "X-Edit-Key"
+note vk "読む・いいね・お気に入り\n掲示板は Turnstile 通過後のみ" pos=bottom
+note pc "期日・資料・写真・\n期日案内・カード文言" pos=bottom
+note ac "事件の作成/削除\nログインの発行" pos=bottom

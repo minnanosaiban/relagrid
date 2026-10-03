@@ -1,0 +1,26 @@
+# docs/tech/court-calendar.md「データモデル」の図（tomo/docs/img/court-calendar-datamodel.svg）の元データ。
+grid 4x3
+title "データモデル：事件を軸に、期日・資料・反応がぶら下がる"
+source "court-calendar 技術解説"
+
+zone A1:A3 "人" color=orange
+zone B1:B3 "軸" color=blue
+zone C1:C3 "事件にぶら下がるもの" color=green
+zone D1:D3 "期日への反応" color=pink
+
+node pres A1 icon=user color=orange "問題提起人"
+node sess A3 icon=lock color=orange "ログインセッション"
+node cases B2 icon=folder size=1.2 color=blue "事件"
+node events C1 icon=clock color=green "期日"
+node mat C2 icon=file color=green "資料・写真"
+node likes C3 icon=bell color=green "いいね"
+node posts D1 icon=mail color=pink "行ってきたよ"
+node bm D2 icon=pin color=pink "お気に入り"
+
+pres -> cases "1人が複数"
+pres -> sess
+cases -> events "複数の期日"
+cases -> mat
+cases -> likes "事件単位"
+events -> posts
+events -> bm "期日単位"

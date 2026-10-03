@@ -1,0 +1,24 @@
+# docs/tech/screenshot-x.md「取得の流れ」の図（tomo/docs/tech/img/screenshot-x-capture-*.svg）の元データ。
+# RelaGrid のテキスト欄に貼り付けて「SVG」で書き出す（light / dark の2枚）。
+grid 5x2
+title "取得の流れ：集めてから、1件ずつ開いて撮る"
+source "screenshot-x 技術解説"
+
+node acc A1 icon=user color=orange "アカウントと期間"
+node list B1 icon=search color=blue "投稿一覧を収集"
+node todo C1 icon=filter color=blue "取得済みを除く"
+node open D1 icon=browser color=blue "1件ずつ開く"
+node date E1 icon=clock color=purple "正確な日時で確認"
+node shot E2 icon=cpu color=blue "撮影（返信まで）"
+node save D2 icon=disk color=green "PNG保存・台帳に追記"
+node hash C2 icon=check color=green "SHA-256を記録"
+
+acc -> list
+list -> todo "古い順"
+todo -> open
+open -> date
+date -> shot "期間内"
+shot -> save
+save -> hash
+note list "画面の7割ずつスクロール\n古い投稿が8件続いたら終了" pos=top
+note date "期間外なら保存しない\n日時が読めなければ保留" pos=top

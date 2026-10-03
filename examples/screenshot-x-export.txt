@@ -1,0 +1,20 @@
+# docs/tech/screenshot-x.md「書き出し」の図（tomo/docs/tech/img/screenshot-x-export-*.svg）の元データ。
+# RelaGrid のテキスト欄に貼り付けて「SVG」で書き出す（light / dark の2枚）。
+grid 5x3
+title "書き出し：原本は変えず、確かめてから作る"
+source "screenshot-x 技術解説"
+
+node arc A2 icon=folder size=1.1 color=green "アーカイブ（原本）"
+node pick B2 icon=filter color=blue "期間と重要度で選ぶ"
+node verify C2 icon=check color=purple "SHA-256を照合"
+node pdf E1 icon=file color=green "PDF"
+node json E2 icon=code color=green "sidenote用JSON"
+node dir E3 icon=folder color=green "提出用フォルダ"
+
+arc -> pick
+pick -> verify
+verify -> pdf "ブラウザ印刷"
+verify -> json "画像を埋め込む"
+verify -> dir "001…の連番"
+note arc "ここは書き換えない" pos=bottom
+note verify "不一致・欠落が1件でも\nあれば書き出しを中止" pos=bottom
