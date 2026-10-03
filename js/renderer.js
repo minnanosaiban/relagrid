@@ -196,7 +196,7 @@
         rx: 18, fill: col.zoneFill, stroke: col.zoneStroke, 'stroke-width': 1.5
       }));
       if (z.label) {
-        var t = el('text', { x: tl.x + pad + 14, y: tl.y + pad + 12 + 12 * ts, 'font-size': 13 * ts, 'font-weight': 700, fill: col.stroke, class: 'rg-zone-label' });
+        var t = el('text', { x: tl.x + pad + 14, y: tl.y + pad + 12 + 12 * ts, 'font-size': 13 * ts, 'font-weight': 700, fill: base.text, class: 'rg-zone-label' });
         t.textContent = z.label;
         g.appendChild(t);
       }
@@ -240,7 +240,7 @@
 
       if (e.label) {
         var mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
-        var text = el('text', { x: mx, y: my, 'text-anchor': 'middle', 'dominant-baseline': 'middle', 'font-size': 12 * ts, 'font-weight': 600, fill: col.stroke });
+        var text = el('text', { x: mx, y: my, 'text-anchor': 'middle', 'dominant-baseline': 'middle', 'font-size': 12 * ts, 'font-weight': 600, fill: base.text });
         text.textContent = e.label;
         addLabelBg(g, text, pendingLabels);
         g.appendChild(text);
