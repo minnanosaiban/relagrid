@@ -1,0 +1,21 @@
+# docs/tech/relagrid.md「全体の構成」の図（tomo/docs/img/relagrid-data-flow.svg）の元データ。
+# RelaGrid のテキスト欄に貼り付けて「SVG」で書き出す。
+grid 4x2
+title "データの流れ：モデルがすべての真ん中"
+source "relagrid 技術解説"
+
+zone A1:B1 "テキスト側" color=slate
+zone C1:C1 "唯一の状態" color=blue
+zone D1:D1 "画面" color=green
+
+node store A1 icon=disk color=slate "localStorage"
+node dsl B1 icon=code color=slate "DSLテキスト"
+node model C1 icon=box size=1.1 color=blue "モデル（JSON）"
+node svg D1 icon=browser color=green "SVGの図"
+node gui A2 icon=user color=orange "GUI操作"
+
+dsl -> store "自動保存"
+dsl <-> model "同期"
+model -> svg "描画"
+gui -> model "commit"
+note model "commit が行うこと\n① 履歴に積む　② DSL欄を更新\n③ 再描画　　④ 保存" pos=bottom
