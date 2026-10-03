@@ -1,2 +1,3 @@
 .claude/
-exports/
+exports/*
+!exports/h30-0215_group-harassment_*.png
