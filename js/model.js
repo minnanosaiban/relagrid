@@ -72,6 +72,15 @@
     return prefix + i;
   }
 
+  // 配列内で未使用の "<prefix><n>" を返す（edge / note / zone 用）。DSLパース後のID(edge1, edge2...)と形式をそろえる。
+  function nextElementId(items, prefix) {
+    var existing = {};
+    (items || []).forEach(function (x) { existing[x.id] = true; });
+    var i = 1;
+    while (existing[prefix + i]) i++;
+    return prefix + i;
+  }
+
   function findNode(model, id) {
     for (var i = 0; i < model.nodes.length; i++) {
       if (model.nodes[i].id === id) return model.nodes[i];
@@ -97,6 +106,7 @@
     createDefaultModel: createDefaultModel,
     cloneModel: cloneModel,
     nextId: nextId,
+    nextElementId: nextElementId,
     findNode: findNode,
     nodeAt: nodeAt
   };

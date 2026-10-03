@@ -171,6 +171,25 @@
     var warnings = [];
     var nodeIds = {};
     model.nodes.forEach(function (n) { nodeIds[n.id] = true; });
+    var RGns = global.RelaGrid;
+    function has(obj, key) { return !!obj && Object.prototype.hasOwnProperty.call(obj, key); }
+    function checkColor(name, what) {
+      if (RGns.colorNames && RGns.colorNames.indexOf(name) === -1) warnings.push(what + ' has unknown color "' + name + '" (using slate)');
+    }
+    if (model.theme !== 'light' && model.theme !== 'dark') warnings.push('unknown theme "' + model.theme + '" (using light)');
+    model.zones.forEach(function (z) { checkColor(z.color, 'zone ' + M.formatRange(z.range)); });
+    model.nodes.forEach(function (n) {
+      if (RGns.icons && !has(RGns.icons, n.icon)) warnings.push('node "' + n.id + '" has unknown icon "' + n.icon + '" (using box)');
+      checkColor(n.color, 'node "' + n.id + '"');
+    });
+    model.edges.forEach(function (e) {
+      checkColor(e.color, 'edge ' + e.from + ' ' + e.op + ' ' + e.to);
+      if (e.style !== 'solid' && e.style !== 'dashed') warnings.push('edge ' + e.from + ' ' + e.op + ' ' + e.to + ' has unknown style "' + e.style + '" (using solid)');
+    });
+    model.notes.forEach(function (n) {
+      if (['top', 'bottom', 'left', 'right'].indexOf(n.pos) === -1) warnings.push('note for "' + n.target + '" has unknown pos "' + n.pos + '" (using right)');
+    });
+
     var cellOwner = {};
     model.nodes.forEach(function (n) {
       var key = n.col + ',' + n.row;
@@ -181,6 +200,7 @@
       }
     });
     model.edges.forEach(function (e) {
+      if (e.from === e.to) warnings.push('edge "' + e.from + '" connects a node to itself (not drawn)');
       if (!nodeIds[e.from]) warnings.push('edge references unknown node "' + e.from + '"');
       if (!nodeIds[e.to]) warnings.push('edge references unknown node "' + e.to + '"');
     });

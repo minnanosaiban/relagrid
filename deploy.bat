@@ -15,6 +15,11 @@ echo === Deploy relagrid to GitHub Pages ===
 cd /d "%~dp0"
 echo Current: %CD%
 
+echo === Changes to be committed ===
+git status --short
+set /p CONFIRM=Commit and push these changes? [y/N]: 
+if /i not "%CONFIRM%"=="y" goto cancelled
+
 echo === Commit ^& Push to GitHub (main) ===
 git add .
 git commit -m "Update relagrid" || echo No changes to commit
@@ -29,4 +34,9 @@ if %errorlevel% neq 0 (
 echo === Done ===
 echo Live site: https://minnanosaiban.github.io/relagrid/
 echo (It may take about 1 minute for GitHub Pages to reflect changes.)
+pause
+exit /b 0
+
+:cancelled
+echo Cancelled. Nothing was committed or pushed.
 pause

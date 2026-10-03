@@ -39,7 +39,16 @@
 
   function getColor(theme, name) {
     var p = getPalette(theme);
-    return p[name] || p.slate;
+    return hasOwn(p, name) ? p[name] : p.slate;
+  }
+
+  function hasOwn(obj, key) {
+    return Object.prototype.hasOwnProperty.call(obj, key);
+  }
+
+  // パレットにある色名ならそのまま、なければ slate。SVGのid等に使っても安全な名前を返す。
+  function normalizeColorName(name) {
+    return COLOR_NAMES.indexOf(name) !== -1 ? name : 'slate';
   }
 
   function getBase(theme) {
@@ -49,5 +58,6 @@
   global.RelaGrid = global.RelaGrid || {};
   global.RelaGrid.colorNames = COLOR_NAMES;
   global.RelaGrid.getColor = getColor;
+  global.RelaGrid.normalizeColorName = normalizeColorName;
   global.RelaGrid.getThemeBase = getBase;
 })(window);

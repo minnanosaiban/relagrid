@@ -45,8 +45,7 @@ GitHub Pagesで公開する場合は、リポジトリの Settings → Pages →
 ```
 grid 4x3                 # 列x行のグリッドサイズ
 theme dark                # light | dark (省略時 light)
-title "図のタイトル"        # 上部に表示（任意）。長いと自動で折り返し、
- で改行も指定できる
+title "図のタイトル"        # 上部に表示（任意）。長いと自動で折り返し、\n で改行も指定できる
 textscale 1.3             # 文字の倍率 0.6〜2.5（省略時 1）。縦画像向けに大きくする
 source "参考: ○○ 判例コラム" # 右下に小さく表示（任意）
 
@@ -68,6 +67,10 @@ note api "SLA 99.95%\np99<200ms" pos=bottom
 `card` `pin` `search` `filter` `link` `git` `code` `terminal` `check`
 `x` `warning` `plus` `box`
 
+- グリッドサイズは 1〜26列 × 1〜30行です（範囲外は構文エラー）。
+- ノードIDは英数字・`_`・`-` のみで、先頭は英字か `_` です（`grid` `node` などの予約語は不可、重複もエラー）。
+- 文字列内の `"` と `\` は `\"` `\\` のようにバックスラッシュでエスケープします（GUIで編集した場合は自動）。
+
 GUIで編集すると、テキストは自動的にこの記法へ整形されます。
 
 ## 構成
@@ -84,6 +87,14 @@ js/
   renderer.js    モデル -> SVG描画
   samples.js     サンプル図
   app.js         GUI操作・状態管理・書き出し
+```
+
+## テスト
+
+パーサ・シリアライザの回帰テストがあります（Node.js のみ、依存なし）。
+
+```bash
+node tests/run.js
 ```
 
 ## 既知の制約（v1）

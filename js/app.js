@@ -330,8 +330,11 @@
       box.appendChild(field('カラー', buildColorPicker(node.color, function (name) { mutateNode(node.id, function (n) { n.color = name; }); })));
 
       var sizeInput = h('input', { type: 'range', min: '0.6', max: '2', step: '0.1', value: String(node.size || 1) });
-      sizeInput.addEventListener('input', function () { mutateNode(node.id, function (n) { n.size = parseFloat(sizeInput.value); }); });
-      box.appendChild(field('サイズ (' + (node.size || 1) + ')', sizeInput));
+      var sizeField = field('サイズ (' + (node.size || 1) + ')', sizeInput);
+      // ドラッグ中は表示だけ更新し、離したとき(change)に1回だけ確定する（commitで入力欄が作り直されるため）
+      sizeInput.addEventListener('input', function () { sizeField.firstChild.textContent = 'サイズ (' + sizeInput.value + ')'; });
+      sizeInput.addEventListener('change', function () { mutateNode(node.id, function (n) { n.size = parseFloat(sizeInput.value); }); });
+      box.appendChild(sizeField);
 
       var colInput = h('input', { type: 'number', min: '1', max: String(state.model.grid.cols), value: String(node.col) });
       var rowInput = h('input', { type: 'number', min: '1', max: String(state.model.grid.rows), value: String(node.row) });
@@ -361,8 +364,13 @@
       var box = h('div', { class: 'inspector-form' });
       box.appendChild(h('h3', { text: '接続 — ' + edge.from + ' → ' + edge.to }));
 
-      box.appendChild(field('起点', buildNodeSelect(edge.from, function (v) { mutateEdge(edge.id, function (e) { e.from = v; }); })));
-      box.appendChild(field('終点', buildNodeSelect(edge.to, function (v) { mutateEdge(edge.id, function (e) { e.to = v; }); })));
+      // 起点と終点が同じになる自己ループは描画できないので拒否する（接続ツールと同じ扱い）。
+      function setEnd(key, other, v) {
+        if (v === edge[other]) { flash('起点と終点には別のノードを選んでください'); renderInspector(); return; }
+        mutateEdge(edge.id, function (e) { e[key] = v; });
+      }
+      box.appendChild(field('起点', buildNodeSelect(edge.from, function (v) { setEnd('from', 'to', v); })));
+      box.appendChild(field('終点', buildNodeSelect(edge.to, function (v) { setEnd('to', 'from', v); })));
 
       var opSel = h('select', {});
       RG.EDGE_OPS.forEach(function (op) {
@@ -387,8 +395,10 @@
       box.appendChild(field('線種', styleSel));
 
       var widthInput = h('input', { type: 'range', min: '1', max: '4', step: '0.5', value: String(edge.width || 1) });
-      widthInput.addEventListener('input', function () { mutateEdge(edge.id, function (e) { e.width = parseFloat(widthInput.value); }); });
-      box.appendChild(field('太さ (' + (edge.width || 1) + ')', widthInput));
+      var widthField = field('太さ (' + (edge.width || 1) + ')', widthInput);
+      widthInput.addEventListener('input', function () { widthField.firstChild.textContent = '太さ (' + widthInput.value + ')'; });
+      widthInput.addEventListener('change', function () { mutateEdge(edge.id, function (e) { e.width = parseFloat(widthInput.value); }); });
+      box.appendChild(widthField);
 
       box.appendChild(field('カラー', buildColorPicker(edge.color, function (name) { mutateEdge(edge.id, function (e) { e.color = name; }); })));
 
@@ -638,7 +648,7 @@
       }
       var d = state.edgeDefaults;
       var newModel = M.cloneModel(state.model);
-      var id = 'edge' + (newModel.edges.length + 1) + '_' + Date.now().toString(36);
+      var id = M.nextElementId(newModel.edges, 'edge');
       newModel.edges.push({ id: id, from: state.connectFrom, to: nodeId, op: d.op, label: d.label, style: d.style, width: d.width, color: d.color });
       state.connectFrom = null;
       commit(newModel, { selection: { type: 'edge', id: id } });
@@ -647,7 +657,7 @@
     function tryAddNote(nodeId) {
       var d = state.noteDefaults;
       var newModel = M.cloneModel(state.model);
-      var id = 'note' + (newModel.notes.length + 1) + '_' + Date.now().toString(36);
+      var id = M.nextElementId(newModel.notes, 'note');
       newModel.notes.push({ id: id, target: nodeId, text: d.text, pos: d.pos });
       commit(newModel, { selection: { type: 'note', id: id } });
     }
@@ -656,6 +666,7 @@
     var zoneDragState = null;
 
     canvas.addEventListener('pointerdown', function (evt) {
+      if (evt.button !== 0) return;   // 右・中ボタンではドラッグや追加を始めない
       var targetEl = evt.target.closest && evt.target.closest('[data-kind]');
       var kind = targetEl && targetEl.getAttribute('data-kind');
       var id = targetEl && targetEl.getAttribute('data-id');
@@ -712,6 +723,20 @@
       }
     });
 
+    // タッチのキャンセルなどで pointerup が来ない場合に、ドラッグ状態を残さない。
+    function cancelPointerInteraction() {
+      if (!dragState && !zoneDragState) return;
+      dragState = null;
+      zoneDragState = null;
+      hideCellHighlight();
+      hideZonePreview();
+    }
+    canvas.addEventListener('pointercancel', cancelPointerInteraction);
+    canvas.addEventListener('lostpointercapture', function () {
+      // 通常は pointerup の後に発火して no-op。pointerup 無しで捕捉が外れた場合だけ後始末する。
+      setTimeout(cancelPointerInteraction, 0);
+    });
+
     canvas.addEventListener('pointerup', function () {
       if (dragState) {
         if (dragState.moved && dragState.targetCell) {
@@ -738,7 +763,7 @@
         var r1 = Math.min(zoneDragState.anchor.row, zoneDragState.current.row);
         var r2 = Math.max(zoneDragState.anchor.row, zoneDragState.current.row);
         var newModel2 = M.cloneModel(state.model);
-        var id = 'zone' + (newModel2.zones.length + 1) + '_' + Date.now().toString(36);
+        var id = M.nextElementId(newModel2.zones, 'zone');
         newModel2.zones.push({ id: id, range: { c1: c1, r1: r1, c2: c2, r2: r2 }, label: d.label, color: d.color });
         commit(newModel2, { selection: { type: 'zone', id: id } });
         zoneDragState = null;
@@ -855,6 +880,14 @@
       var hl = clone.getElementById('rg-cell-highlight'); if (hl) hl.parentNode.removeChild(hl);
       var zp = clone.getElementById('rg-zone-preview'); if (zp) zp.parentNode.removeChild(zp);
       var cells = clone.querySelector('.rg-cells'); if (cells) cells.parentNode.removeChild(cells);
+      // 編集用の要素（選択用の透明な当たり判定・data属性・選択状態のクラス）は書き出しに含めない。
+      Array.prototype.slice.call(clone.querySelectorAll('line[stroke="transparent"]')).forEach(function (x) { x.parentNode.removeChild(x); });
+      Array.prototype.slice.call(clone.querySelectorAll('[data-kind], [data-id]')).forEach(function (x) {
+        x.removeAttribute('data-kind'); x.removeAttribute('data-id'); x.removeAttribute('data-col'); x.removeAttribute('data-row');
+      });
+      Array.prototype.slice.call(clone.querySelectorAll('.selected, .connecting')).forEach(function (x) {
+        x.classList.remove('selected'); x.classList.remove('connecting');
+      });
       var gridLayer = clone.querySelector('.rg-grid'); if (gridLayer) gridLayer.parentNode.removeChild(gridLayer);
       clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
       return new XMLSerializer().serializeToString(clone);
@@ -910,6 +943,65 @@
     });
 
     // ---------- import ----------
+    // 外部JSONを検証・正規化する。壊れた要素は捨て、数値・列挙値は範囲内に丸める。
+    // 最後にDSLへ直列化して再パースし、パーサの検証（ID・グリッド範囲など）も通す。
+    function normalizeImportedModel(obj) {
+      if (!obj || typeof obj !== 'object' || !obj.grid || !Array.isArray(obj.nodes)) throw new Error('shape mismatch');
+      function str(v) { return typeof v === 'string' ? v : ''; }
+      function int(v, min, max, fallback) {
+        var n = parseInt(v, 10);
+        return isNaN(n) ? fallback : Math.max(min, Math.min(max, n));
+      }
+      function num(v, min, max, fallback) {
+        var n = parseFloat(v);
+        return isNaN(n) ? fallback : Math.max(min, Math.min(max, n));
+      }
+      function pick(v, allowed, fallback) { return allowed.indexOf(v) !== -1 ? v : fallback; }
+      function list(v) { return Array.isArray(v) ? v.filter(function (x) { return x && typeof x === 'object'; }) : []; }
+
+      var m = M.createDefaultModel();
+      m.grid = { cols: int(obj.grid.cols, 1, RG.GRID_LIMITS.cols, 4), rows: int(obj.grid.rows, 1, RG.GRID_LIMITS.rows, 3) };
+      m.theme = obj.theme === 'dark' ? 'dark' : 'light';
+      m.title = str(obj.title);
+      m.source = str(obj.source);
+      m.textScale = num(obj.textScale, 0.6, 2.5, 1);
+
+      var ids = {}, cells = {};
+      list(obj.nodes).forEach(function (n) {
+        var id = str(n.id), col = int(n.col, 1, m.grid.cols, 0), row = int(n.row, 1, m.grid.rows, 0);
+        if (!RG.isValidId(id) || ids[id] || !col || !row || cells[col + ',' + row]) return;
+        ids[id] = true; cells[col + ',' + row] = true;
+        m.nodes.push({
+          id: id, col: col, row: row,
+          icon: Object.prototype.hasOwnProperty.call(RG.icons, n.icon) ? n.icon : 'box',
+          size: num(n.size, 0.6, 2, 1), color: RG.normalizeColorName(n.color), label: str(n.label)
+        });
+      });
+      list(obj.zones).forEach(function (z) {
+        var r = z.range || {};
+        var c1 = int(r.c1, 1, m.grid.cols, 0), c2 = int(r.c2, 1, m.grid.cols, 0), r1 = int(r.r1, 1, m.grid.rows, 0), r2 = int(r.r2, 1, m.grid.rows, 0);
+        if (!c1 || !c2 || !r1 || !r2) return;
+        m.zones.push({ id: 'zone' + (m.zones.length + 1), range: { c1: Math.min(c1, c2), r1: Math.min(r1, r2), c2: Math.max(c1, c2), r2: Math.max(r1, r2) }, label: str(z.label), color: RG.normalizeColorName(z.color) });
+      });
+      list(obj.edges).forEach(function (e) {
+        if (!ids[e.from] || !ids[e.to]) return;
+        m.edges.push({
+          id: 'edge' + (m.edges.length + 1), from: e.from, to: e.to, op: pick(e.op, RG.EDGE_OPS, '->'),
+          label: str(e.label), style: pick(e.style, ['solid', 'dashed'], 'solid'),
+          width: num(e.width, 1, 4, 1), color: RG.normalizeColorName(e.color)
+        });
+      });
+      list(obj.notes).forEach(function (n) {
+        if (!ids[n.target]) return;
+        m.notes.push({ id: 'note' + (m.notes.length + 1), target: n.target, text: str(n.text), pos: pick(n.pos, ['top', 'bottom', 'left', 'right'], 'right') });
+      });
+
+      var text = RG.serializeModel(m);
+      var parsed = RG.parseDSL(text);
+      if (parsed.errors.length) throw new Error('invalid model');
+      return { model: parsed.model, text: text };
+    }
+
     importBtn.addEventListener('click', function () { importFile.click(); });
     importFile.addEventListener('change', function () {
       var file = importFile.files[0];
@@ -919,25 +1011,21 @@
         var text = String(reader.result);
         if (/\.json$/i.test(file.name)) {
           try {
-            var obj = JSON.parse(text);
-            if (!obj.grid || !obj.nodes) throw new Error('shape mismatch');
-            var loaded = M.createDefaultModel();
-            Object.assign(loaded, obj);
-            loaded.grid = {
-              cols: Math.max(1, Math.min(RG.GRID_LIMITS.cols, parseInt(obj.grid.cols, 10) || 4)),
-              rows: Math.max(1, Math.min(RG.GRID_LIMITS.rows, parseInt(obj.grid.rows, 10) || 3))
-            };
-            dslText.value = RG.serializeModel(loaded);
-            commit(loaded, { selection: null });
+            var imported = normalizeImportedModel(JSON.parse(text));
+            dslText.value = imported.text;
+            commit(imported.model, { fromText: true, selection: null });
           } catch (e) { flash('JSONの読み込みに失敗しました'); }
         } else {
           var result = RG.parseDSL(text);
-          if (result.errors.length) { flash('読み込んだファイルに構文エラーがあります (' + result.errors[0].line + '行目)'); return; }
-          dslText.value = text;
-          commit(result.model, { fromText: true, selection: null });
+          if (result.errors.length) flash('読み込んだファイルに構文エラーがあります (' + result.errors[0].line + '行目)');
+          else {
+            dslText.value = text;
+            commit(result.model, { fromText: true, selection: null });
+          }
         }
-        importFile.value = '';
+        importFile.value = '';   // 同じファイルを直して選び直しても change が発火するようにする
       };
+      reader.onerror = function () { importFile.value = ''; flash('ファイルの読み込みに失敗しました'); };
       reader.readAsText(file);
     });
 

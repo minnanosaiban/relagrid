@@ -85,11 +85,13 @@
   RG.computeLayout = computeLayout;
 
   function ensureMarkers(defs, theme, usedColors) {
+    var made = {};
     usedColors.forEach(function (name) {
       var c = RG.getColor(theme, name);
       ['end', 'start'].forEach(function (dir) {
         var id = 'arrow-' + dir + '-' + name;
-        if (defs.querySelector('#' + id)) return;
+        if (made[id]) return;
+        made[id] = true;
         var marker = el('marker', {
           id: id, viewBox: '0 0 10 10', refX: dir === 'end' ? 9 : 1, refY: 5,
           markerWidth: 7, markerHeight: 7, orient: dir === 'end' ? 'auto' : 'auto-start-reverse'
@@ -127,7 +129,7 @@
     var defs = el('defs');
     svg.appendChild(defs);
     var usedColors = {};
-    model.edges.forEach(function (e) { usedColors[e.color || 'slate'] = true; });
+    model.edges.forEach(function (e) { usedColors[RG.normalizeColorName(e.color)] = true; });
     ensureMarkers(defs, theme, Object.keys(usedColors).length ? Object.keys(usedColors) : ['slate']);
 
     var bg = el('rect', { x: 0, y: 0, width: layout.width, height: layout.height, fill: base.bg, class: 'rg-bg' });
@@ -209,7 +211,7 @@
 
     model.edges.forEach(function (e) {
       var a = nodeById[e.from], b = nodeById[e.to];
-      if (!a || !b) return;
+      if (!a || !b || a === b) return;   // 自己ループは描画しない
       var col = RG.getColor(theme, e.color);
       var pa = layout.cellCenter(a.col, a.row), pb = layout.cellCenter(b.col, b.row);
       var dx = pb.x - pa.x, dy = pb.y - pa.y;
@@ -221,8 +223,9 @@
 
       var g = el('g', { class: 'rg-edge' + (selection && selection.type === 'edge' && selection.id === e.id ? ' selected' : ''), 'data-kind': 'edge', 'data-id': e.id });
 
-      var markerStart = (e.op === '<-' || e.op === '<->') ? 'url(#arrow-start-' + e.color + ')' : null;
-      var markerEnd = (e.op === '->' || e.op === '<->') ? 'url(#arrow-end-' + e.color + ')' : null;
+      var markerColor = RG.normalizeColorName(e.color);
+      var markerStart = (e.op === '<-' || e.op === '<->') ? 'url(#arrow-start-' + markerColor + ')' : null;
+      var markerEnd = (e.op === '->' || e.op === '<->') ? 'url(#arrow-end-' + markerColor + ')' : null;
 
       // Wide invisible hit path for easier selection.
       g.appendChild(el('line', { x1: start.x, y1: start.y, x2: end.x, y2: end.y, stroke: 'transparent', 'stroke-width': 16 }));
@@ -267,7 +270,7 @@
         fill: 'none', stroke: 'currentColor', color: col.stroke,
         'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       });
-      iconG.innerHTML = RG.icons[n.icon] || RG.icons.box;
+      iconG.innerHTML = Object.prototype.hasOwnProperty.call(RG.icons, n.icon) ? RG.icons[n.icon] : RG.icons.box;
       g.appendChild(iconG);
 
       if (n.label) {
