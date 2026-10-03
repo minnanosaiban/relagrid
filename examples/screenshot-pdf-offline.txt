@@ -1,0 +1,20 @@
+# docs/tech/screenshot-pdf.md「オフライン版」の図（tomo/docs/tech/img/screenshot-pdf-offline-*.svg）の元データ。
+grid 4x3
+title "オフライン版は、公開版と同じソースから自動で作る"
+source "screenshot-pdf 技術解説"
+
+zone A1:A3 "素材（二重管理なし）" color=slate
+zone D2:D2 "成果物" color=green
+
+node html A1 icon=code color=blue "index.html"
+node js A2 icon=code color=blue "app.js"
+node lib A3 icon=box color=purple "pdf-lib.min.js"
+node build B2 icon=gear size=1.1 color=orange "build-offline.js"
+node out D2 icon=file size=1.1 color=green "オフライン版"
+
+html -> build
+js -> build
+lib -> build
+build -> out "1枚に埋め込む"
+note build "<script> を中身に置換\nfaviconはdata URIへ\nCDN参照なし" pos=bottom
+note out "HTML 1枚で完結\nネット接続なしで動く" pos=bottom

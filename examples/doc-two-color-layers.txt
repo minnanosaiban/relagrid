@@ -1,0 +1,20 @@
+# docs/tech/relagrid.md「色が2層ある理由」の図（tomo/docs/img/relagrid-two-color-layers.svg）の元データ。
+# RelaGrid のテキスト欄に貼り付けて「SVG」で書き出す。
+# ノードIDに theme は使えない（予約語）ため、スイッチは sw と書いている。
+grid 4x3
+title "色は2層：画面はCSS変数、図はSVGの属性"
+source "relagrid 技術解説"
+
+zone C1:D1 "画面の色：CSS変数（ページの中だけで効く）" color=blue
+zone C3:D3 "図の色：SVGの属性に値を直接書く" color=green
+
+node sw A2 icon=refresh color=orange "テーマ切替"
+node cls C1 icon=browser color=blue "body.rg-dark"
+node ui D1 icon=laptop color=blue "画面の色"
+node pal C3 icon=chart color=green "パレット（JS）"
+node out D3 icon=file color=green "書き出しSVG"
+
+sw -> cls "クラス付与"
+sw -> pal "色を選ぶ"
+cls -> ui "変数を置換"
+pal -> out "値を書く"

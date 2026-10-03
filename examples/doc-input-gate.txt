@@ -1,0 +1,20 @@
+# docs/tech/relagrid.md「外から来るデータは「信用できない入力」として扱う」の図（tomo/docs/img/relagrid-input-gate.svg）の元データ。
+# RelaGrid のテキスト欄に貼り付けて「SVG」で書き出す。
+grid 4x3
+title "外から来るデータは、パーサーの関門を通す"
+source "relagrid 技術解説"
+
+zone A1:A3 "外から来るもの" color=orange
+zone D2:D2 "検証済み" color=green
+
+node text A1 icon=code color=orange "テキスト欄"
+node file A2 icon=file color=orange "ファイル"
+node saved A3 icon=disk color=orange "前回の保存"
+node parser C2 icon=shield size=1.2 color=blue "パーサー"
+node model D2 icon=box color=green "モデル"
+
+text -> parser "手書き・AIの貼り付け"
+file -> parser "JSONは作り直して通す"
+saved -> parser "起動時にも読み直す"
+parser -> model "合格のみ"
+note parser "関門でやること\n・グリッドは 26×30 まで\n・IDは英数字、重複は不可\n・エスケープを正しく読む\n・色・アイコン名を確かめる\nエラー：図を更新しない\n警告：描いたうえで知らせる" pos=bottom

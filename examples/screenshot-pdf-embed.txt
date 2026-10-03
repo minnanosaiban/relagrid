@@ -1,0 +1,18 @@
+# docs/tech/screenshot-pdf.md「画像の埋め込み」の図（tomo/docs/tech/img/screenshot-pdf-embed-*.svg）の元データ。
+grid 5x3
+title "画像1枚の埋め込み方：形式と向きで3通りに分ける"
+source "screenshot-pdf 技術解説"
+
+node src A2 icon=file color=orange "画像1枚"
+node asis C1 icon=check color=green "そのまま"
+node rot C2 icon=refresh color=blue "回転→JPEG"
+node conv C3 icon=gear color=purple "PNGに変換"
+node embed E2 icon=file size=1.1 color=slate "pdf-lib で貼る"
+
+src -> asis "PNG・JPEG"
+src -> rot "回転つき"
+src -> conv "WebP等"
+asis -> embed "無劣化"
+rot -> embed
+conv -> embed
+note embed "「軽量化」ON：長辺1600pxのJPEGを試し\n元より小さい時だけ採用" pos=bottom

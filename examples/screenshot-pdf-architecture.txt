@@ -1,0 +1,20 @@
+# docs/tech/screenshot-pdf.md「全体の構成」の図（tomo/docs/tech/img/screenshot-pdf-architecture-*.svg）の元データ。
+# RelaGrid のテキスト欄に貼り付けて「SVG」で書き出す（light / dark の2枚）。
+grid 4x2
+title "全体像：処理はすべてスマホのブラウザの中"
+source "screenshot-pdf 技術解説"
+
+zone A1:D1 "スマホのブラウザの中（画像もPDFもここから出ない）" color=green
+zone B2:B2 "配信元" color=slate
+
+node pics A1 icon=mobile color=orange "スクショ"
+node app B1 icon=cpu size=1.1 color=blue "app.js + pdf-lib"
+node pdf C1 icon=file color=green "A4のPDF"
+node share D1 icon=mail color=green "共有シート"
+node cf B2 icon=cloud color=slate "Cloudflare Pages"
+
+pics -> app "選ぶ"
+app -> pdf "生成"
+pdf -> share "共有 / 保存"
+cf -> app "JS・HTMLを配信" style=dashed
+note cf "静的ファイルを置くだけ\n画像は受け取らない" pos=bottom

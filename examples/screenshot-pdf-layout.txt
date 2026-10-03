@@ -1,0 +1,16 @@
+# docs/tech/screenshot-pdf.md「A4への割り付け」の図（tomo/docs/tech/img/screenshot-pdf-layout-*.svg）の元データ。
+grid 2x2
+title "1ページ4枚：N型（左上→左下→右上→右下）"
+source "screenshot-pdf 技術解説"
+
+zone A1:B2 "A4 1ページ（余白24pt・すき間16pt）" color=blue
+
+node s1 A1 icon=mobile color=orange "1枚目"
+node s2 A2 icon=mobile color=orange "2枚目"
+node s3 B1 icon=mobile color=orange "3枚目"
+node s4 B2 icon=mobile color=orange "4枚目"
+
+s1 -> s2
+s2 -> s3
+s3 -> s4
+note s4 "1コマ ≒ 266 × 389 pt\n画像は縦横比を保って中央に収める" pos=bottom
