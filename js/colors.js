@@ -11,7 +11,7 @@
     purple: { stroke: '#7c3aed', zoneFill: 'rgba(124,58,237,0.12)', zoneStroke: 'rgba(124,58,237,0.4)' },
     teal:   { stroke: '#0d9488', zoneFill: 'rgba(13,148,136,0.12)', zoneStroke: 'rgba(13,148,136,0.4)' },
     pink:   { stroke: '#db2777', zoneFill: 'rgba(219,39,119,0.12)', zoneStroke: 'rgba(219,39,119,0.4)' },
-    yellow: { stroke: '#ca8a04', zoneFill: 'rgba(202,138,4,0.14)',  zoneStroke: 'rgba(202,138,4,0.4)' }
+    yellow: { stroke: '#a16207', zoneFill: 'rgba(161,98,7,0.12)',   zoneStroke: 'rgba(161,98,7,0.4)' }
   };
 
   var DARK = {

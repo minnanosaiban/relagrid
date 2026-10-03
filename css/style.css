@@ -7,6 +7,7 @@
   --ui-accent: #2563eb;
   --ui-accent-text: #ffffff;
   --ui-danger: #dc2626;
+  --ui-warn: #a16207;
   --ui-btn-bg: #ffffff;
   --ui-btn-hover: #eef2ff;
   /* sidenote と共通のヒーロー配色 */
@@ -25,6 +26,7 @@ body.rg-dark {
   --ui-subtext: #94a3b8;
   --ui-accent: #60a5fa;
   --ui-accent-text: #0b1220;
+  --ui-warn: #facc15;
   --ui-btn-bg: #1e293b;
   --ui-btn-hover: #24324a;
   --hero-bg: #0f1726;
@@ -309,7 +311,7 @@ input[type="text"], input[type="number"], select, textarea {
   border-top: 1px solid var(--ui-border);
 }
 .status-bar.status-error { color: var(--ui-danger); }
-.status-bar.status-warn { color: #ca8a04; }
+.status-bar.status-warn { color: var(--ui-warn); }
 
 /* ---------- help panel ---------- */
 .help-panel {
