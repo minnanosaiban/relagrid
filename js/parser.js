@@ -19,12 +19,21 @@
 
   var M = global.RelaGrid.model;
   var EDGE_OPS = ['<->', '->', '<-', '--'];
+  var KEYWORDS = ['grid', 'theme', 'title', 'textscale', 'source', 'zone', 'node', 'note'];
+  var ID_PATTERN = /^[A-Za-z_][A-Za-z0-9_-]*$/;
+  var MAX_COLS = 26, MAX_ROWS = 30;
+
+  // ノードIDとして使える名前か（空白・記号・予約語は不可）。GUIの入力検証でも使う。
+  function isValidId(id) {
+    return ID_PATTERN.test(id) && KEYWORDS.indexOf(id) === -1;
+  }
 
   function stripComment(line) {
     var inQuotes = false;
     for (var i = 0; i < line.length; i++) {
       var c = line[i];
-      if (c === '"' && line[i - 1] !== '\\') inQuotes = !inQuotes;
+      if (c === '\\' && inQuotes) i++;   // 引用符内のエスケープ(\" や \\)は2文字を1単位として読み飛ばす
+      else if (c === '"') inQuotes = !inQuotes;
       else if (c === '#' && !inQuotes) return line.slice(0, i);
     }
     return line;
@@ -35,7 +44,7 @@
     var re = /"((?:[^"\\]|\\.)*)"|(\S+)/g;
     var m;
     while ((m = re.exec(line))) {
-      if (m[1] !== undefined) tokens.push({ type: 'string', value: m[1].replace(/\\"/g, '"') });
+      if (m[1] !== undefined) tokens.push({ type: 'string', value: m[1].replace(/\\(["\\])/g, '$1') });
       else tokens.push({ type: 'word', value: m[2] });
     }
     return tokens;
@@ -51,7 +60,11 @@
     if (tokens.length < 2) throw new Error('grid requires a size, e.g. "grid 4x3"');
     var m = /^(\d+)x(\d+)$/i.exec(tokens[1].value);
     if (!m) throw new Error('invalid grid size "' + tokens[1].value + '" (expected e.g. 4x3)');
-    model.grid = { cols: parseInt(m[1], 10), rows: parseInt(m[2], 10) };
+    var cols = parseInt(m[1], 10), rows = parseInt(m[2], 10);
+    if (cols < 1 || rows < 1 || cols > MAX_COLS || rows > MAX_ROWS) {
+      throw new Error('grid size out of range (' + cols + 'x' + rows + '; allowed 1-' + MAX_COLS + ' columns x 1-' + MAX_ROWS + ' rows)');
+    }
+    model.grid = { cols: cols, rows: rows };
   }
 
   function parseZone(tokens, model) {
@@ -72,6 +85,10 @@
   function parseNode(tokens, model) {
     if (tokens.length < 3) throw new Error('node requires an id and position, e.g. "node api B1"');
     var id = tokens[1].value;
+    if (tokens[1].type !== 'word' || !isValidId(id)) {
+      throw new Error('invalid node id "' + id + '" (use letters, digits, _ or -, starting with a letter or _; reserved words are not allowed)');
+    }
+    if (M.findNode(model, id)) throw new Error('duplicate node id "' + id + '"');
     var pos = M.parseGridRef(tokens[2].value);
     var icon = 'box', size = 1, color = 'slate', label = id;
     for (var i = 3; i < tokens.length; i++) {
@@ -154,6 +171,15 @@
     var warnings = [];
     var nodeIds = {};
     model.nodes.forEach(function (n) { nodeIds[n.id] = true; });
+    var cellOwner = {};
+    model.nodes.forEach(function (n) {
+      var key = n.col + ',' + n.row;
+      if (cellOwner[key]) warnings.push('nodes "' + cellOwner[key] + '" and "' + n.id + '" share the same cell ' + M.formatGridRef(n.col, n.row));
+      else cellOwner[key] = n.id;
+      if (n.col < 1 || n.row < 1 || n.col > model.grid.cols || n.row > model.grid.rows) {
+        warnings.push('node "' + n.id + '" is outside the grid (' + M.formatGridRef(n.col, n.row) + ')');
+      }
+    });
     model.edges.forEach(function (e) {
       if (!nodeIds[e.from]) warnings.push('edge references unknown node "' + e.from + '"');
       if (!nodeIds[e.to]) warnings.push('edge references unknown node "' + e.to + '"');
@@ -168,4 +194,6 @@
   global.RelaGrid = global.RelaGrid || {};
   global.RelaGrid.parseDSL = parseDSL;
   global.RelaGrid.EDGE_OPS = EDGE_OPS;
+  global.RelaGrid.isValidId = isValidId;
+  global.RelaGrid.GRID_LIMITS = { cols: MAX_COLS, rows: MAX_ROWS };
 })(window);

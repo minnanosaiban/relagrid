@@ -311,6 +311,7 @@
       idInput.addEventListener('change', function () {
         var newId = idInput.value.trim();
         if (!newId || newId === node.id) { idInput.value = node.id; return; }
+        if (!RG.isValidId(newId)) { flash('IDは英数字・_・-のみ（先頭は英字か_）で、予約語は使えません'); idInput.value = node.id; return; }
         if (M.findNode(state.model, newId)) { flash('同じIDのノードが既にあります'); idInput.value = node.id; return; }
         var newModel = M.cloneModel(state.model);
         var n = M.findNode(newModel, node.id);
@@ -922,6 +923,10 @@
             if (!obj.grid || !obj.nodes) throw new Error('shape mismatch');
             var loaded = M.createDefaultModel();
             Object.assign(loaded, obj);
+            loaded.grid = {
+              cols: Math.max(1, Math.min(RG.GRID_LIMITS.cols, parseInt(obj.grid.cols, 10) || 4)),
+              rows: Math.max(1, Math.min(RG.GRID_LIMITS.rows, parseInt(obj.grid.rows, 10) || 3))
+            };
             dslText.value = RG.serializeModel(loaded);
             commit(loaded, { selection: null });
           } catch (e) { flash('JSONの読み込みに失敗しました'); }
