@@ -143,6 +143,38 @@
         'note f "G・Fとも事実確認・対応せず" pos=right',
         'note a "交際→破局後、職場訪問・自宅押しかけ" pos=bottom'
       ].join('\n')
+    },
+    {
+      // 縦版・X投稿用をさらに絞った簡易版。親会社の責任が否定された理由だけが伝わるよう、
+      // 相談（G・F）と提訴の注記を省き、①つきまとい→④通報→⑤責任否定の3本の矢印に絞っている。
+      name: 'グループ会社内セクハラ・ストーカー事件（最高裁H30.2.15）縦版・X投稿用（簡易）',
+      category: '法律・判例',
+      source: 'https://www.thomsonreuters.co.jp/ja/westlaw-japan/column-law/2018/180507/',
+      text: [
+        '# 縦長・3列の簡易版。ノード6個・矢印3本。結論の理由（Pは通報時に退職済み）だけを注記にしている',
+        'grid 3x5',
+        'textscale 1.3',
+        'title "親会社の責任が否定された理由\\n（最高裁 平成30年2月15日判決）"',
+        'source "参考: 浜辺陽一郎 Westlaw Japan 判例コラム 第132号"',
+        '',
+        'zone A3:B3 "I社（親会社）" color=purple',
+        'zone A4:B5 "T社（子会社）" color=blue',
+        'zone C4:C5 "K社（子会社）" color=teal',
+        '',
+        'node court A1 icon=file  size=1   color=slate  "最高裁 H30.2.15"',
+        'node i     A3 icon=box   size=1   color=purple "I社"',
+        'node win   B3 icon=bell  size=1   color=purple "グループ相談窓口"',
+        'node d     B4 icon=user  size=1   color=slate  "D（同僚）"',
+        'node p     A5 icon=user  size=1.1 color=orange "P（被害者・T社）"',
+        'node a     C5 icon=user  size=1.1 color=red    "A（加害者・K社）"',
+        '',
+        'a -> p "①つきまとい" style=dashed color=red width=2',
+        'd -> win "④通報（2011.10）" style=dashed color=purple',
+        'court -> i "⑤責任否定" color=red width=2',
+        '',
+        'note a "2010.8〜2011.1" pos=top',
+        'note win "通報時、Pは既に\\n退職済み" pos=right'
+      ].join('\n')
     }
   ];
 
